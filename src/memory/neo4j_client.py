@@ -7,11 +7,15 @@ All other memory files use this — never import neo4j driver directly elsewhere
 Uses Neo4j AuraDB free tier or local instance.
 Connection string from configs/config.py NEO4J section.
 Supports both bolt:// (local) and neo4j+s:// (AuraDB) URI schemes.
+
+Bug fix (Day 3):
+  - Added __del__ for clean driver shutdown on process exit.
+  - Wrapped session.run() in try/finally to close session on network error.
 """
 
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from loguru import logger
 
@@ -41,6 +45,18 @@ class Neo4jClient:
         self._driver = None
         self._connected = False
 
+    def __del__(self) -> None:
+        """Clean up driver on garbage collection.
+
+        Bug fix (Day 3): prevents 'Failed to write data to connection'
+        errors that appeared when the process exited with an open driver.
+        Never raises — __del__ must be exception-safe.
+        """
+        try:
+            self.close()
+        except Exception:
+            pass  # never raise in __del__
+
     @classmethod
     def get_instance(cls) -> "Neo4jClient":
         """Return the singleton Neo4jClient, creating it on first call.
@@ -62,7 +78,7 @@ class Neo4jClient:
             all errors are logged with actionable troubleshooting hints.
         """
         try:
-            from neo4j import GraphDatabase, exceptions as neo4j_exc
+            from neo4j import GraphDatabase
         except ImportError:
             logger.error(
                 "neo4j package not installed. Run: pip install neo4j"
@@ -115,12 +131,15 @@ class Neo4jClient:
             try:
                 self.query(query, {})
             except Exception as e:
-                # Schema elements may already exist from a previous run — that's fine.
+                # Schema elements may already exist — that's fine.
                 logger.debug(f"Schema query note (usually harmless): {e}")
         logger.success("Neo4j schema initialized")
 
     def query(self, cypher: str, params: dict) -> list[dict]:
         """Execute a Cypher query and return results as a list of dicts.
+
+        Bug fix (Day 3): session is now closed in a finally block to
+        ensure clean teardown even when a network error occurs mid-query.
 
         Args:
             cypher: Cypher query string.  Use ``$param_name`` placeholders.
@@ -137,9 +156,12 @@ class Neo4jClient:
                 "Neo4j not connected. Call connect() first or check your .env settings."
             )
         database = NEO4J.get("database") or None  # None → driver default
-        with self._driver.session(database=database) as session:
+        session = self._driver.session(database=database)
+        try:
             result = session.run(cypher, params)
             return [dict(record) for record in result]
+        finally:
+            session.close()
 
     def query_single(self, cypher: str, params: dict) -> Optional[dict]:
         """Execute a query and return the first result record, or None.
@@ -157,10 +179,12 @@ class Neo4jClient:
     def close(self) -> None:
         """Close the driver connection pool and reset internal state."""
         if self._driver:
-            self._driver.close()
+            try:
+                self._driver.close()
+            except Exception as e:
+                logger.debug(f"Neo4j driver close warning: {e}")
             self._driver = None
         self._connected = False
-        logger.info("Neo4j connection closed")
 
     @property
     def is_connected(self) -> bool:

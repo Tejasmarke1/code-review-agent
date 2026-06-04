@@ -4,6 +4,10 @@ Report Generator
 Saves review results to disk as markdown and JSON.
 Called after each session by the orchestrator or CLI.
 
+Bug fix (Day 3): All Path.write_text() calls now explicitly use
+encoding="utf-8" to prevent Windows cp1252 from garbling em-dashes
+and other Unicode characters (â€" → —).
+
 Output structure::
 
     reports/{repo_name}/{session_id}/
@@ -23,6 +27,9 @@ from configs.config import OUTPUT
 from src.agent.state import AgentState, AgentStatus
 from src.agent.orchestrator import OrchestratorSession
 
+# UTF-8 used on every single write — never rely on platform default encoding.
+_ENC = "utf-8"
+
 
 class ReportGenerator:
     """Persists OrchestratorSession results to a structured directory on disk."""
@@ -35,9 +42,9 @@ class ReportGenerator:
 
         Creates a dated directory under ``reports/{repo_name}/{session_id}/``
         containing three files:
-        - ``summary.md``   — human-readable markdown.
-        - ``findings.json``— machine-readable JSON with all issues and metadata.
-        - ``trace.md``     — full ReAct trace of every agent step.
+        - ``summary.md``    — human-readable markdown (UTF-8).
+        - ``findings.json`` — machine-readable JSON with all issues and metadata.
+        - ``trace.md``      — full ReAct trace of every agent step (UTF-8).
 
         Args:
             session: Completed :class:`OrchestratorSession`.
@@ -49,23 +56,23 @@ class ReportGenerator:
         report_dir = self.reports_dir / repo_name / session.session_id
         report_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1. Summary markdown
+        # 1. Summary markdown — explicit UTF-8
         summary_path = report_dir / "summary.md"
-        summary_path.write_text(session.repo_summary, encoding="utf-8")
+        summary_path.write_text(session.repo_summary, encoding=_ENC)
 
-        # 2. Machine-readable JSON
+        # 2. Machine-readable JSON — explicit UTF-8
         findings_path = report_dir / "findings.json"
         findings_data = self._build_findings_dict(session)
         findings_path.write_text(
-            json.dumps(findings_data, indent=2, default=str),
-            encoding="utf-8",
+            json.dumps(findings_data, indent=2, default=str, ensure_ascii=False),
+            encoding=_ENC,
         )
 
-        # 3. Agent trace markdown
+        # 3. Agent trace markdown — explicit UTF-8
         trace_path = report_dir / "trace.md"
         trace_path.write_text(
             self._build_trace_markdown(session),
-            encoding="utf-8",
+            encoding=_ENC,
         )
 
         logger.success(
@@ -82,9 +89,6 @@ class ReportGenerator:
     ) -> Path:
         """Save a single-file review result when no orchestrator session exists.
 
-        Useful for one-off reviews from the CLI or API without the full
-        orchestrator wrapper.
-
         Args:
             state: Completed AgentState from ReActLoop.run().
             repo_url: Repository URL for directory naming.
@@ -97,16 +101,15 @@ class ReportGenerator:
         report_dir = self.reports_dir / repo_name / session_id
         report_dir.mkdir(parents=True, exist_ok=True)
 
-        # Findings JSON
         findings = {
-            "session_id":   session_id,
-            "repo_url":     repo_url,
-            "file_path":    state.file_path,
-            "status":       state.status.value,
-            "risk_score":   state.risk_score,
-            "risk_label":   state.risk_label,
-            "steps_taken":  state.current_step,
-            "elapsed_seconds": state.elapsed_seconds,
+            "session_id":        session_id,
+            "repo_url":          repo_url,
+            "file_path":         state.file_path,
+            "status":            state.status.value,
+            "risk_score":        state.risk_score,
+            "risk_label":        state.risk_label,
+            "steps_taken":       state.current_step,
+            "elapsed_seconds":   state.elapsed_seconds,
             "issues": [
                 {
                     "title":       i.title,
@@ -120,15 +123,17 @@ class ReportGenerator:
                 }
                 for i in state.issues_found
             ],
-            "summary": state.summary,
+            "summary":      state.summary,
             "final_review": state.final_review,
         }
+        # Explicit UTF-8 on both writes
         (report_dir / "findings.json").write_text(
-            json.dumps(findings, indent=2, default=str), encoding="utf-8"
+            json.dumps(findings, indent=2, default=str, ensure_ascii=False),
+            encoding=_ENC,
         )
         (report_dir / "review.md").write_text(
             state.final_review or "_No review generated._",
-            encoding="utf-8",
+            encoding=_ENC,
         )
 
         logger.success(f"Single-file report saved → {report_dir}")
@@ -137,7 +142,7 @@ class ReportGenerator:
     # ── Private helpers ────────────────────────────────────────────────────────
 
     def _build_findings_dict(self, session: OrchestratorSession) -> dict:
-        """Serialise the full session to a plain Python dict for JSON output.
+        """Serialise the full session to a JSON-safe dict.
 
         Args:
             session: Completed OrchestratorSession.
@@ -154,13 +159,13 @@ class ReportGenerator:
                 if session.completed_at
                 else None
             ),
-            "total_files":          len(session.files_reviewed),
-            "total_issues":         session.total_issues,
-            "critical_issues":      session.critical_issues,
-            "high_issues":          session.high_issues,
-            "medium_issues":        session.medium_issues,
-            "low_issues":           session.low_issues,
-            "patterns_detected":    session.patterns_detected,
+            "total_files":           len(session.files_reviewed),
+            "total_issues":          session.total_issues,
+            "critical_issues":       session.critical_issues,
+            "high_issues":           session.high_issues,
+            "medium_issues":         session.medium_issues,
+            "low_issues":            session.low_issues,
+            "patterns_detected":     session.patterns_detected,
             "total_elapsed_seconds": session.total_elapsed_seconds,
             "files": [
                 {
@@ -195,38 +200,34 @@ class ReportGenerator:
     def _build_trace_markdown(self, session: OrchestratorSession) -> str:
         """Build a human-readable markdown trace of all agent steps.
 
-        Each file gets its own section; each step shows Thought / Action /
-        Input / Observation.  Observations are capped at 500 chars to keep
-        the file readable.
-
         Args:
             session: Completed OrchestratorSession.
 
         Returns:
-            Markdown string.
+            Markdown string (Unicode, written as UTF-8).
         """
         repo_name = session.repo_url.rstrip("/").split("/")[-1]
         lines = [
-            f"# Agent Trace — {repo_name}",
-            f"",
+            f"# Agent Trace \u2014 {repo_name}",
+            "",
             f"**Session:** `{session.session_id}`  ",
             f"**Date:** {session.started_at.strftime('%Y-%m-%d %H:%M')}  ",
             f"**Files reviewed:** {len(session.files_reviewed)}  ",
-            f"",
+            "",
         ]
 
         for state in session.file_states:
             file_name = Path(state.file_path).name
             lines += [
-                f"---",
-                f"",
+                "---",
+                "",
                 f"## {file_name}",
-                f"",
+                "",
                 f"**Path:** `{state.file_path}`  ",
                 f"**Risk:** {state.risk_score:.3f} ({state.risk_label})  ",
                 f"**Status:** {state.status.value}  ",
                 f"**Steps:** {state.current_step}  ",
-                f"",
+                "",
             ]
 
             if not state.thought_history:
@@ -239,26 +240,26 @@ class ReportGenerator:
                     obs_preview += "\n... [truncated]"
 
                 lines += [
-                    f"### Step {step.step_number} — `{step.action}`",
-                    f"",
-                    f"**Thought:**",
+                    f"### Step {step.step_number} \u2014 `{step.action}`",
+                    "",
+                    "**Thought:**",
                     f"> {step.thought.strip()}",
-                    f"",
+                    "",
                     f"**Action Input:** `{step.action_input}`",
-                    f"",
-                    f"**Observation:**",
-                    f"```",
+                    "",
+                    "**Observation:**",
+                    "```",
                     obs_preview,
-                    f"```",
-                    f"",
+                    "```",
+                    "",
                 ]
 
             if state.final_review:
                 lines += [
-                    f"### Final Review",
-                    f"",
+                    "### Final Review",
+                    "",
                     state.final_review,
-                    f"",
+                    "",
                 ]
 
         return "\n".join(lines)

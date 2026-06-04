@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Review Agent</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <span class="logo">&#x1F916;</span>
+            <h1>Code Review Agent</h1>
+        </div>
+        <div class="header-right">
+            <div id="health-badge" class="badge">checking...</div>
+            <span id="uptime" class="uptime"></span>
+        </div>
+    </header>
+
+    <!-- Input Panel -->
+    <section class="input-panel">
+        <h2>Submit Review</h2>
+
+        <div class="form-group">
+            <label for="repo-url">Repository URL <span class="required">*</span></label>
+            <input type="text" id="repo-url"
+                placeholder="https://github.com/pallets/flask"
+                value="">
+        </div>
+
+        <div class="form-group">
+            <label for="files-input">
+                Files to review
+                <span class="hint">(one absolute path per line — leave empty for auto-detect)</span>
+            </label>
+            <textarea id="files-input" rows="3"
+                placeholder="C:\projects\app\src\auth.py&#10;C:\projects\app\src\utils.py&#10;(or leave empty)">
+            </textarea>
+        </div>
+
+        <div class="form-row">
+            <label class="checkbox-label">
+                <input type="checkbox" id="use-memory" checked>
+                <span>Use Neo4j memory</span>
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" id="use-defect-api">
+                <span>Use Defect Prediction API</span>
+            </label>
+            <label class="num-label">
+                Max files:
+                <input type="number" id="max-files" value="3" min="1" max="10">
+            </label>
+        </div>
+
+        <button id="submit-btn" onclick="startReview()">&#9654; Start Review</button>
+    </section>
+
+    <!-- Status Bar -->
+    <div id="status-bar" class="status-bar hidden">
+        <div class="spinner"></div>
+        <span id="status-text">Initializing...</span>
+        <span id="status-timer" class="timer"></span>
+    </div>
+
+    <!-- Error Banner -->
+    <div id="error-banner" class="error-banner hidden">
+        <span id="error-text"></span>
+        <button onclick="dismissError()">&#x2715;</button>
+    </div>
+
+    <!-- Results Panel -->
+    <section id="results-panel" class="hidden">
+
+        <!-- Session header -->
+        <div class="session-header">
+            <span class="session-id" id="session-id-label"></span>
+            <span class="session-time" id="session-time-label"></span>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="summary-cards" id="summary-cards"></div>
+
+        <!-- File tabs -->
+        <div class="tabs-wrapper">
+            <div class="tabs" id="file-tabs"></div>
+        </div>
+
+        <!-- Per-file content -->
+        <div id="file-content"></div>
+
+        <!-- Repo summary (collapsed by default) -->
+        <details class="repo-summary-details">
+            <summary>Full Repo Report (markdown)</summary>
+            <pre id="repo-summary-text"></pre>
+        </details>
+
+        <!-- Memory panel -->
+        <div class="memory-panel" id="memory-panel">
+            <div class="memory-header">
+                <h3>&#x1F9E0; Graph Memory</h3>
+                <button class="refresh-btn" onclick="loadMemoryStats()">&#x21BB; Refresh</button>
+            </div>
+            <div id="memory-stats"><p class="dim">Loading...</p></div>
+        </div>
+
+    </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
