@@ -41,7 +41,7 @@ Action Input: {"summary": "one paragraph summary", "detailed_review": "full mark
 
 Rules:
 - Always start by reading the file if you haven't already
-- Always run at least ruff AND bandit before finishing
+- Always run at least run_ruff AND run_bandit before finishing (exact tool names)
 - Check complexity (radon) for any file over 100 lines
 - Cross-reference with ML risk score: if risk is HIGH, investigate more deeply
 - Never hallucinate issues — only report what tools confirm or what you can directly see in code

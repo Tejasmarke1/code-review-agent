@@ -34,7 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from configs.config import AGENT
-from src.agent.state import AgentState, AgentStatus
+from src.agent.state import AgentState, AgentStatus, ReviewIssue, Severity
 from src.agent.prompt_engine import PromptEngine
 from src.llm.groq_client import GroqClient
 from src.tools.registry import Tool, ToolRegistry
@@ -169,6 +169,9 @@ class ReActLoop:
             # Truncate very long observations to avoid context overflow
             if len(observation) > 3000:
                 observation = observation[:3000] + "\n... [truncated]"
+
+            # Auto-populate state.issues_found from tool output
+            self._extract_issues_from_observation(action, observation, state)
 
             # Record the step and build the continuation prompt
             state.add_step(thought, action, action_input, observation)
@@ -332,6 +335,172 @@ class ReActLoop:
             f"**Steps taken:** {state.current_step}\n"
             f"**Tools used:** {', '.join(set(state.tools_called))}"
         )
+
+    def _extract_issues_from_observation(
+        self, action: str, observation: str, state: AgentState
+    ) -> None:
+        """Parse tool output and auto-populate state.issues_found.
+
+        The LLM writes a great narrative review but never calls add_issue()
+        directly — this method bridges that gap by parsing the structured
+        output from ruff, bandit, and radon into ReviewIssue objects so
+        Neo4j gets real data to store and pattern-detect against.
+
+        Args:
+            action: The tool name that produced this observation.
+            observation: The raw string returned by the tool.
+            state: AgentState to append ReviewIssue objects to.
+        """
+        if "ERROR" in observation or not observation.strip():
+            return
+
+        try:
+            if action == "run_bandit":
+                self._parse_bandit_issues(observation, state)
+            elif action == "run_ruff":
+                self._parse_ruff_issues(observation, state)
+            elif action == "run_radon":
+                self._parse_radon_issues(observation, state)
+        except Exception as e:
+            logger.debug(f"Issue extraction failed for {action} (non-fatal): {e}")
+
+    def _parse_bandit_issues(self, observation: str, state: AgentState) -> None:
+        """Extract ReviewIssue objects from a bandit observation string."""
+        lines = observation.splitlines()
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            # Match: "  Line 17: [HIGH/HIGH] Issue text"
+            if line.startswith("Line ") and "[" in line and "]" in line:
+                try:
+                    # Extract line number
+                    line_num = int(line.split("Line ")[1].split(":")[0].strip())
+
+                    # Extract severity (first of HIGH/MEDIUM/LOW pair)
+                    bracket = line[line.index("[")+1:line.index("]")]
+                    raw_sev = bracket.split("/")[0].strip().upper()
+                    severity_map = {
+                        "HIGH": Severity.HIGH,
+                        "MEDIUM": Severity.MEDIUM,
+                        "LOW": Severity.LOW,
+                    }
+                    severity = severity_map.get(raw_sev, Severity.LOW)
+
+                    # Issue text follows the bracket
+                    issue_text = line[line.index("]")+1:].strip()
+                    if not issue_text:
+                        i += 1
+                        continue
+
+                    # Peek at next line for test name
+                    test_name = ""
+                    if i + 1 < len(lines) and "Test:" in lines[i+1]:
+                        test_name = lines[i+1].split("Test:")[1].split("—")[0].strip()
+
+                    state.add_issue(ReviewIssue(
+                        file_path=state.file_path,
+                        line_number=line_num,
+                        severity=severity,
+                        category="security",
+                        title=issue_text[:80],
+                        description=issue_text,
+                        suggestion=f"Fix {test_name} — see bandit docs for remediation.",
+                        source_tool="bandit",
+                        confidence=0.85,
+                    ))
+                except (ValueError, IndexError):
+                    pass
+            i += 1
+
+    def _parse_ruff_issues(self, observation: str, state: AgentState) -> None:
+        """Extract ReviewIssue objects from a ruff observation string."""
+        # Severity mapping by ruff rule prefix
+        severity_by_prefix = {
+            "E": Severity.MEDIUM,   # pycodestyle errors
+            "W": Severity.LOW,      # pycodestyle warnings
+            "F": Severity.MEDIUM,   # pyflakes (unused imports, undefined names)
+            "S": Severity.HIGH,     # flake8-bandit security
+            "B": Severity.MEDIUM,   # bugbear
+            "C": Severity.MEDIUM,   # complexity
+            "N": Severity.LOW,      # naming
+        }
+        category_by_prefix = {
+            "E": "style", "W": "style", "F": "style",
+            "S": "security", "B": "logic",
+            "C": "complexity", "N": "style",
+        }
+
+        for line in observation.splitlines():
+            line = line.strip()
+            # Match: "  Line 6: [F401] `os` imported but unused"
+            if line.startswith("Line ") and "[" in line and "]" in line:
+                try:
+                    line_num = int(line.split("Line ")[1].split(":")[0].strip())
+                    code = line[line.index("[")+1:line.index("]")].strip()
+                    message = line[line.index("]")+1:].strip()
+                    # Strip trailing URL in parentheses
+                    if "  (" in message:
+                        message = message[:message.rindex("  (")].strip()
+
+                    prefix = code[0] if code else "E"
+                    severity = severity_by_prefix.get(prefix, Severity.LOW)
+                    category = category_by_prefix.get(prefix, "style")
+
+                    if not message:
+                        continue
+
+                    state.add_issue(ReviewIssue(
+                        file_path=state.file_path,
+                        line_number=line_num,
+                        severity=severity,
+                        category=category,
+                        title=f"[{code}] {message[:70]}",
+                        description=message,
+                        suggestion=f"Fix ruff rule {code}.",
+                        source_tool="ruff",
+                        confidence=0.90,
+                    ))
+                except (ValueError, IndexError):
+                    pass
+
+    def _parse_radon_issues(self, observation: str, state: AgentState) -> None:
+        """Extract ReviewIssue objects from a radon observation string.
+
+        Only flags functions graded C or worse (complexity ≥ 11).
+        """
+        for line in observation.splitlines():
+            line = line.strip()
+            # Match: "  compute_risk_score (line 44): complexity=25, grade=D ← COMPLEX"
+            if "complexity=" in line and "grade=" in line:
+                try:
+                    func_name = line.split("(line")[0].strip()
+                    line_num = int(line.split("(line")[1].split(")")[0].strip())
+                    complexity = int(line.split("complexity=")[1].split(",")[0].strip())
+                    grade = line.split("grade=")[1][0].upper()
+
+                    if grade not in ("C", "D", "E", "F"):
+                        continue
+
+                    severity = Severity.HIGH if grade in ("E", "F") else Severity.MEDIUM
+                    state.add_issue(ReviewIssue(
+                        file_path=state.file_path,
+                        line_number=line_num,
+                        severity=severity,
+                        category="complexity",
+                        title=f"High complexity: {func_name}() grade={grade} (cc={complexity})",
+                        description=(
+                            f"Function '{func_name}' has cyclomatic complexity {complexity} "
+                            f"(grade {grade}). Threshold for concern is C (cc≥11)."
+                        ),
+                        suggestion=(
+                            f"Refactor '{func_name}' — extract sub-functions, "
+                            "reduce branching, or apply early-return patterns."
+                        ),
+                        source_tool="radon",
+                        confidence=0.95,
+                    ))
+                except (ValueError, IndexError):
+                    pass
 
     def _register_finish_tool(self) -> None:
         """Register the finish_review control tool if it is not already registered.

@@ -1,0 +1,426 @@
+2026-06-03 15:54:15.454 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-03 15:54:16.672 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-03 15:54:17.555 | SUCCESS  | src.memory.neo4j_client:initialize_schema:120 - Neo4j schema initialized
+2026-06-03 15:54:17.555 | SUCCESS  | src.agent.orchestrator:__init__:106 - Memory layer ready (Neo4j connected)
+2026-06-03 15:54:17.565 | INFO     | src.agent.orchestrator:review_repo:148 - [7b752556] Starting repo review: https://github.com/example/day2-test-repo
+2026-06-03 15:54:17.565 | INFO     | src.agent.orchestrator:review_repo:172 - [7b752556] Reviewing 3 files
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 15:54:18.455 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 15:54:18.460 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 15:54:18.460 | INFO     | src.agent.react_loop:run:110 - [45281f24] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_sqyx4yhr\auth.py (risk=0.00)
+2026-06-03 15:54:18.460 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 15:54:19.180 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 391 chars
+2026-06-03 15:54:19.182 | INFO     | src.agent.react_loop:run:163 - [45281f24] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:54:20.068 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 539 chars
+2026-06-03 15:54:20.069 | INFO     | src.agent.react_loop:run:163 - [45281f24] Step 1: ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:54:20.886 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 419 chars
+2026-06-03 15:54:20.886 | INFO     | src.agent.react_loop:run:163 - [45281f24] Step 2: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:54:22.004 | INFO     | src.agent.react_loop:_do_reflection:292 - [45281f24] Reflection at step 3
+2026-06-03 15:54:22.618 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 420 chars
+2026-06-03 15:54:22.619 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: I have found no issues so far, but I've only run Ruff and read the file, which may not be enough to catch all potential problems. The most important thing left to check is security vulnerabil
+2026-06-03 15:54:50.398 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [5]: 527 chars
+2026-06-03 15:54:50.398 | INFO     | src.agent.react_loop:run:163 - [45281f24] Step 3: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:54:57.058 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [6]: 635 chars
+2026-06-03 15:54:57.061 | INFO     | src.agent.react_loop:run:163 - [45281f24] Step 4: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:55:05.058 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [7]: 1316 chars
+2026-06-03 15:55:05.058 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [45281f24] Agent finished review
+2026-06-03 15:55:05.063 | SUCCESS  | src.agent.react_loop:run:191 - [45281f24] Review complete: 0 issues, 5 steps, 46.6s
+2026-06-03 15:55:06.055 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for auth.py: 0 issues, 0 new patterns
+2026-06-03 15:55:06.663 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for data_processor.py (126 chars)
+2026-06-03 15:55:06.670 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 15:55:06.670 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 15:55:06.670 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 15:55:06.671 | INFO     | src.agent.react_loop:run:110 - [a66bd1d5] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_sqyx4yhr\data_processor.py (risk=0.00)
+2026-06-03 15:55:06.671 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 15:55:14.319 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [8]: 494 chars
+2026-06-03 15:55:14.321 | INFO     | src.agent.react_loop:run:163 - [a66bd1d5] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\data_processor.py'})
+2026-06-03 15:55:21.539 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [9]: 639 chars
+2026-06-03 15:55:21.539 | INFO     | src.agent.react_loop:run:163 - [a66bd1d5] Step 1: ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\data_processor.py'})
+2026-06-03 15:55:28.629 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [10]: 507 chars
+2026-06-03 15:55:28.629 | INFO     | src.agent.react_loop:run:163 - [a66bd1d5] Step 2: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\data_processor.py'})
+2026-06-03 15:55:28.692 | INFO     | src.agent.react_loop:_do_reflection:292 - [a66bd1d5] Reflection at step 3
+2026-06-03 15:55:30.538 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [11]: 433 chars
+2026-06-03 15:55:30.538 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: I have read the file and run the ruff tool, but no issues have been found yet. The risk score is unknown, so I should proceed with caution and run additional tools to gather more information.
+2026-06-03 15:55:38.495 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [12]: 650 chars
+2026-06-03 15:55:38.495 | INFO     | src.agent.react_loop:run:163 - [a66bd1d5] Step 3: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\data_processor.py'})
+2026-06-03 15:55:47.758 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [13]: 546 chars
+2026-06-03 15:55:47.758 | INFO     | src.agent.react_loop:run:163 - [a66bd1d5] Step 4: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\data_processor.py'})
+2026-06-03 15:55:57.430 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [14]: 1057 chars
+2026-06-03 15:55:57.430 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [a66bd1d5] Agent finished review
+2026-06-03 15:55:57.430 | SUCCESS  | src.agent.react_loop:run:191 - [a66bd1d5] Review complete: 0 issues, 5 steps, 50.8s
+2026-06-03 15:55:59.013 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for data_processor.py: 0 issues, 0 new patterns
+2026-06-03 15:55:59.656 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for api_client.py (126 chars)
+2026-06-03 15:55:59.656 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 15:55:59.656 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 15:55:59.656 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 15:55:59.656 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 15:55:59.656 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 15:55:59.656 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 15:55:59.658 | INFO     | src.agent.react_loop:run:110 - [1bf79bf6] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_sqyx4yhr\api_client.py (risk=0.00)
+2026-06-03 15:55:59.658 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 15:56:04.917 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [15]: 533 chars
+2026-06-03 15:56:04.917 | INFO     | src.agent.react_loop:run:163 - [1bf79bf6] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\api_client.py', 'start_line': 1, 'end_line': None})
+2026-06-03 15:56:10.921 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [16]: 654 chars
+2026-06-03 15:56:10.923 | INFO     | src.agent.react_loop:run:163 - [1bf79bf6] Step 1: bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\api_client.py'})
+2026-06-03 15:56:15.960 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [17]: 589 chars
+2026-06-03 15:56:15.960 | INFO     | src.agent.react_loop:run:163 - [1bf79bf6] Step 2: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\api_client.py'})
+2026-06-03 15:56:16.828 | INFO     | src.agent.react_loop:_do_reflection:292 - [1bf79bf6] Reflection at step 3
+2026-06-03 15:56:18.860 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [18]: 526 chars
+2026-06-03 15:56:18.860 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: I have found no issues so far, with bandit not reporting any security concerns, and I have read the file to understand its contents. The most important thing left to check is the code's compl
+2026-06-03 15:56:24.785 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [19]: 566 chars
+2026-06-03 15:56:24.785 | INFO     | src.agent.react_loop:run:163 - [1bf79bf6] Step 3: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\api_client.py'})
+2026-06-03 15:56:33.506 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [20]: 697 chars
+2026-06-03 15:56:33.506 | INFO     | src.agent.react_loop:run:163 - [1bf79bf6] Step 4: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\api_client.py'})
+2026-06-03 15:56:42.108 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [21]: 1347 chars
+2026-06-03 15:56:42.108 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [1bf79bf6] Agent finished review
+2026-06-03 15:56:42.108 | SUCCESS  | src.agent.react_loop:run:191 - [1bf79bf6] Review complete: 0 issues, 5 steps, 42.5s
+2026-06-03 15:56:43.405 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for api_client.py: 0 issues, 0 new patterns
+2026-06-03 15:56:43.417 | SUCCESS  | src.agent.orchestrator:review_repo:213 - [7b752556] Session complete — 3 files, 0 issues, 139.8s
+2026-06-03 15:56:45.691 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-03 15:56:46.351 | SUCCESS  | src.memory.neo4j_client:initialize_schema:120 - Neo4j schema initialized
+2026-06-03 15:56:46.351 | SUCCESS  | src.agent.orchestrator:__init__:106 - Memory layer ready (Neo4j connected)
+2026-06-03 15:56:46.352 | INFO     | src.agent.orchestrator:review_repo:148 - [1a1546ce] Starting repo review: https://github.com/example/day2-test-repo
+2026-06-03 15:56:46.352 | INFO     | src.agent.orchestrator:review_repo:172 - [1a1546ce] Reviewing 1 files
+2026-06-03 15:56:46.781 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for auth.py (126 chars)
+2026-06-03 15:56:46.781 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 15:56:46.781 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 15:56:46.783 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 15:56:46.783 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 15:56:46.783 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 15:56:46.783 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 15:56:46.783 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 15:56:46.783 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 15:56:46.783 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 15:56:46.785 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 15:56:46.785 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 15:56:46.785 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 15:56:46.785 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 15:56:46.785 | INFO     | src.agent.react_loop:run:110 - [e6f08965] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_sqyx4yhr\auth.py (risk=0.00)
+2026-06-03 15:56:46.787 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 15:56:50.499 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 513 chars
+2026-06-03 15:56:50.499 | INFO     | src.agent.react_loop:run:163 - [e6f08965] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:56:56.493 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 694 chars
+2026-06-03 15:56:56.493 | INFO     | src.agent.react_loop:run:163 - [e6f08965] Step 1: bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:57:02.390 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 496 chars
+2026-06-03 15:57:02.390 | INFO     | src.agent.react_loop:run:163 - [e6f08965] Step 2: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:57:03.362 | INFO     | src.agent.react_loop:_do_reflection:292 - [e6f08965] Reflection at step 3
+2026-06-03 15:57:04.185 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 538 chars
+2026-06-03 15:57:04.190 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: Although the risk score is unknown and no issues have been found yet, it's essential to continue reviewing the code to ensure its security and maintainability. Since the file has been read an
+2026-06-03 15:57:11.543 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [5]: 644 chars
+2026-06-03 15:57:11.543 | INFO     | src.agent.react_loop:run:163 - [e6f08965] Step 3: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:57:19.713 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [6]: 822 chars
+2026-06-03 15:57:19.713 | INFO     | src.agent.react_loop:run:163 - [e6f08965] Step 4: get_repo_risk_scores({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_sqyx4yhr\\\\auth.py'})
+2026-06-03 15:57:30.497 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [7]: 1475 chars
+2026-06-03 15:57:30.497 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [e6f08965] Agent finished review
+2026-06-03 15:57:30.497 | SUCCESS  | src.agent.react_loop:run:191 - [e6f08965] Review complete: 0 issues, 5 steps, 43.7s
+2026-06-03 15:57:31.111 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for auth.py: 0 issues, 0 new patterns
+2026-06-03 15:57:31.111 | SUCCESS  | src.agent.orchestrator:review_repo:213 - [1a1546ce] Session complete — 1 files, 0 issues, 43.7s
+2026-06-03 15:57:31.134 | SUCCESS  | reports.generator:save_session_report:71 - Report saved → D:\Data Science\projects\code-review-agent\reports\day2-test-repo\7b752556  (0 issues across 3 files)
+2026-06-03 16:00:48.462 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-03 16:00:49.708 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-03 16:00:50.496 | SUCCESS  | src.memory.neo4j_client:initialize_schema:120 - Neo4j schema initialized
+2026-06-03 16:00:50.498 | SUCCESS  | src.agent.orchestrator:__init__:106 - Memory layer ready (Neo4j connected)
+2026-06-03 16:00:50.506 | INFO     | src.agent.orchestrator:review_repo:148 - [512aa966] Starting repo review: https://github.com/example/day2-test-repo
+2026-06-03 16:00:50.506 | INFO     | src.agent.orchestrator:review_repo:172 - [512aa966] Reviewing 3 files
+2026-06-03 16:00:50.948 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for auth.py (126 chars)
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 16:00:50.948 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 16:00:50.953 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 16:00:50.953 | INFO     | src.agent.react_loop:run:110 - [c8812b1a] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_9m9tjvzo\auth.py (risk=0.00)
+2026-06-03 16:00:50.953 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 16:00:52.142 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 521 chars
+2026-06-03 16:00:52.142 | INFO     | src.agent.react_loop:run:163 - [c8812b1a] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py', 'start_line': 1, 'end_line': None})
+2026-06-03 16:00:53.306 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 652 chars
+2026-06-03 16:00:53.306 | INFO     | src.agent.react_loop:run:163 - [c8812b1a] Step 1: bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:00:53.951 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 526 chars
+2026-06-03 16:00:53.951 | INFO     | src.agent.react_loop:run:163 - [c8812b1a] Step 2: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:00:54.799 | INFO     | src.agent.react_loop:_do_reflection:292 - [c8812b1a] Reflection at step 3
+2026-06-03 16:00:55.528 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 447 chars
+2026-06-03 16:00:55.531 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: I have found no issues so far, but I've only read the file and run bandit, which didn't report any security issues. The most important thing left to check is the code's complexity and maintai
+2026-06-03 16:00:56.426 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [5]: 645 chars
+2026-06-03 16:00:56.426 | INFO     | src.agent.react_loop:run:163 - [c8812b1a] Step 3: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:00:58.081 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [6]: 958 chars
+2026-06-03 16:00:58.083 | INFO     | src.agent.react_loop:run:163 - [c8812b1a] Step 4: get_repo_risk_scores({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:00:59.713 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [7]: 1237 chars
+2026-06-03 16:00:59.713 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [c8812b1a] Agent finished review
+2026-06-03 16:00:59.713 | SUCCESS  | src.agent.react_loop:run:191 - [c8812b1a] Review complete: 0 issues, 5 steps, 8.8s
+2026-06-03 16:01:00.250 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for auth.py: 0 issues, 0 new patterns
+2026-06-03 16:01:00.659 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for data_processor.py (126 chars)
+2026-06-03 16:01:00.659 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 16:01:00.659 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 16:01:00.659 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 16:01:00.675 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 16:01:00.675 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 16:01:00.675 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 16:01:00.675 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 16:01:00.675 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 16:01:00.675 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 16:01:00.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 16:01:00.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 16:01:00.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 16:01:00.677 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 16:01:00.677 | INFO     | src.agent.react_loop:run:110 - [2c77fb9f] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_9m9tjvzo\data_processor.py (risk=0.00)
+2026-06-03 16:01:00.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 16:01:01.767 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [8]: 479 chars
+2026-06-03 16:01:01.767 | INFO     | src.agent.react_loop:run:163 - [2c77fb9f] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\data_processor.py'})
+2026-06-03 16:01:02.895 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [9]: 773 chars
+2026-06-03 16:01:02.896 | INFO     | src.agent.react_loop:run:163 - [2c77fb9f] Step 1: bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\data_processor.py'})
+2026-06-03 16:01:04.865 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [10]: 486 chars
+2026-06-03 16:01:04.865 | INFO     | src.agent.react_loop:run:163 - [2c77fb9f] Step 2: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\data_processor.py'})
+2026-06-03 16:01:04.920 | INFO     | src.agent.react_loop:_do_reflection:292 - [2c77fb9f] Reflection at step 3
+2026-06-03 16:01:06.776 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [11]: 459 chars
+2026-06-03 16:01:06.787 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: I have read the file and run initial checks with Ruff and Bandit, but no issues have been found yet. The risk score is unknown, so I should proceed with caution and check for complexity and p
+2026-06-03 16:01:15.221 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [12]: 495 chars
+2026-06-03 16:01:15.221 | INFO     | src.agent.react_loop:run:163 - [2c77fb9f] Step 3: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\data_processor.py'})
+2026-06-03 16:01:24.193 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [13]: 657 chars
+2026-06-03 16:01:24.193 | INFO     | src.agent.react_loop:run:163 - [2c77fb9f] Step 4: get_repo_risk_scores({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\data_processor.py'})
+2026-06-03 16:01:34.945 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [14]: 1239 chars
+2026-06-03 16:01:34.945 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [2c77fb9f] Agent finished review
+2026-06-03 16:01:34.945 | SUCCESS  | src.agent.react_loop:run:191 - [2c77fb9f] Review complete: 0 issues, 5 steps, 34.3s
+2026-06-03 16:01:35.589 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for data_processor.py: 0 issues, 0 new patterns
+2026-06-03 16:01:36.070 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for api_client.py (126 chars)
+2026-06-03 16:01:36.070 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 16:01:36.070 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 16:01:36.070 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 16:01:36.070 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 16:01:36.070 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 16:01:36.072 | INFO     | src.agent.react_loop:run:110 - [77d490db] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_9m9tjvzo\api_client.py (risk=0.00)
+2026-06-03 16:01:36.072 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 16:01:43.181 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [15]: 403 chars
+2026-06-03 16:01:43.181 | INFO     | src.agent.react_loop:run:163 - [77d490db] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\api_client.py'})
+2026-06-03 16:01:48.260 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [16]: 753 chars
+2026-06-03 16:01:48.260 | INFO     | src.agent.react_loop:run:163 - [77d490db] Step 1: ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\api_client.py'})
+2026-06-03 16:01:53.165 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [17]: 437 chars
+2026-06-03 16:01:53.165 | INFO     | src.agent.react_loop:run:163 - [77d490db] Step 2: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\api_client.py'})
+2026-06-03 16:01:53.246 | INFO     | src.agent.react_loop:_do_reflection:292 - [77d490db] Reflection at step 3
+2026-06-03 16:01:56.075 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [18]: 410 chars
+2026-06-03 16:01:56.077 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: I have read the file and run the ruff tool, but no issues have been found yet. The most important thing left to check is the security of the code, as the risk score is unknown and may indicat
+2026-06-03 16:02:03.257 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [19]: 564 chars
+2026-06-03 16:02:03.257 | INFO     | src.agent.react_loop:run:163 - [77d490db] Step 3: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\api_client.py'})
+2026-06-03 16:02:10.230 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [20]: 683 chars
+2026-06-03 16:02:10.230 | INFO     | src.agent.react_loop:run:163 - [77d490db] Step 4: get_repo_risk_scores({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\api_client.py'})
+2026-06-03 16:02:19.190 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [21]: 1029 chars
+2026-06-03 16:02:19.192 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [77d490db] Agent finished review
+2026-06-03 16:02:19.192 | SUCCESS  | src.agent.react_loop:run:191 - [77d490db] Review complete: 0 issues, 5 steps, 43.1s
+2026-06-03 16:02:20.581 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for api_client.py: 0 issues, 0 new patterns
+2026-06-03 16:02:20.582 | SUCCESS  | src.agent.orchestrator:review_repo:213 - [512aa966] Session complete — 3 files, 0 issues, 86.1s
+2026-06-03 16:02:22.774 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-03 16:02:23.552 | SUCCESS  | src.memory.neo4j_client:initialize_schema:120 - Neo4j schema initialized
+2026-06-03 16:02:23.554 | SUCCESS  | src.agent.orchestrator:__init__:106 - Memory layer ready (Neo4j connected)
+2026-06-03 16:02:23.556 | INFO     | src.agent.orchestrator:review_repo:148 - [6a9c5770] Starting repo review: https://github.com/example/day2-test-repo
+2026-06-03 16:02:23.557 | INFO     | src.agent.orchestrator:review_repo:172 - [6a9c5770] Reviewing 1 files
+2026-06-03 16:02:24.021 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for auth.py (126 chars)
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 16:02:24.027 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 16:02:24.029 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-03 16:02:24.029 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-03 16:02:24.029 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-03 16:02:24.029 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-03 16:02:24.029 | INFO     | src.agent.react_loop:run:110 - [eb319e6d] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_9m9tjvzo\auth.py (risk=0.00)
+2026-06-03 16:02:24.031 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 16:02:27.351 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 512 chars
+2026-06-03 16:02:27.352 | INFO     | src.agent.react_loop:run:163 - [eb319e6d] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:02:33.622 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 684 chars
+2026-06-03 16:02:33.624 | INFO     | src.agent.react_loop:run:163 - [eb319e6d] Step 1: ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:02:39.582 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 593 chars
+2026-06-03 16:02:39.597 | INFO     | src.agent.react_loop:run:163 - [eb319e6d] Step 2: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:02:39.658 | INFO     | src.agent.react_loop:_do_reflection:292 - [eb319e6d] Reflection at step 3
+2026-06-03 16:02:41.516 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 411 chars
+2026-06-03 16:02:41.519 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: I have read the auth.py file, but haven't found any issues yet, and the risk score is unknown. The most important thing left to check is the security of the code, as authentication is a criti
+2026-06-03 16:02:49.949 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [5]: 646 chars
+2026-06-03 16:02:49.949 | INFO     | src.agent.react_loop:run:163 - [eb319e6d] Step 3: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:02:56.923 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [6]: 742 chars
+2026-06-03 16:02:56.923 | INFO     | src.agent.react_loop:run:163 - [eb319e6d] Step 4: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:03:07.070 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [7]: 544 chars
+2026-06-03 16:03:07.070 | INFO     | src.agent.react_loop:run:163 - [eb319e6d] Step 5: get_repo_risk_scores({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_9m9tjvzo\\\\auth.py'})
+2026-06-03 16:03:07.070 | INFO     | src.agent.react_loop:_do_reflection:292 - [eb319e6d] Reflection at step 6
+2026-06-03 16:03:07.866 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [8]: 505 chars
+2026-06-03 16:03:07.868 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: Although the file has been read and initial checks with bandit and ruff have been performed, no issues have been found yet. The risk score is unknown, which doesn't raise any immediate red fl
+2026-06-03 16:03:19.835 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [9]: 1684 chars
+2026-06-03 16:03:19.835 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [eb319e6d] Agent finished review
+2026-06-03 16:03:19.835 | SUCCESS  | src.agent.react_loop:run:191 - [eb319e6d] Review complete: 0 issues, 6 steps, 55.8s
+2026-06-03 16:03:20.502 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for auth.py: 0 issues, 0 new patterns
+2026-06-03 16:03:20.509 | SUCCESS  | src.agent.orchestrator:review_repo:213 - [6a9c5770] Session complete — 1 files, 0 issues, 55.8s
+2026-06-03 16:03:20.522 | SUCCESS  | reports.generator:save_session_report:71 - Report saved → D:\Data Science\projects\code-review-agent\reports\day2-test-repo\512aa966  (0 issues across 3 files)
+2026-06-04 08:08:01.082 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-04 08:08:02.995 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-04 08:08:04.038 | SUCCESS  | src.memory.neo4j_client:initialize_schema:120 - Neo4j schema initialized
+2026-06-04 08:08:04.038 | SUCCESS  | src.agent.orchestrator:__init__:106 - Memory layer ready (Neo4j connected)
+2026-06-04 08:08:04.055 | INFO     | src.agent.orchestrator:review_repo:148 - [f470d459] Starting repo review: https://github.com/example/day2-test-repo
+2026-06-04 08:08:04.055 | INFO     | src.agent.orchestrator:review_repo:172 - [f470d459] Reviewing 3 files
+2026-06-04 08:08:04.850 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for auth.py (126 chars)
+2026-06-04 08:08:04.851 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-04 08:08:04.851 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-04 08:08:04.852 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-04 08:08:04.852 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-04 08:08:04.852 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-04 08:08:04.852 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-04 08:08:04.853 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-04 08:08:04.853 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-04 08:08:04.854 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-04 08:08:04.854 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-04 08:08:04.854 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-04 08:08:04.855 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-04 08:08:04.855 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-04 08:08:04.855 | INFO     | src.agent.react_loop:run:110 - [b1842679] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_8su6hfpv\auth.py (risk=0.00)
+2026-06-04 08:08:04.856 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-04 08:08:05.919 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 485 chars
+2026-06-04 08:08:05.919 | INFO     | src.agent.react_loop:run:163 - [b1842679] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\auth.py'})
+2026-06-04 08:08:06.953 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 837 chars
+2026-06-04 08:08:06.953 | INFO     | src.agent.react_loop:run:163 - [b1842679] Step 1: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\auth.py'})
+2026-06-04 08:08:08.954 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 809 chars
+2026-06-04 08:08:08.954 | INFO     | src.agent.react_loop:run:163 - [b1842679] Step 2: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\auth.py'})
+2026-06-04 08:08:09.019 | INFO     | src.agent.react_loop:_do_reflection:295 - [b1842679] Reflection at step 3
+2026-06-04 08:08:09.928 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 576 chars
+2026-06-04 08:08:09.928 | INFO     | src.agent.react_loop:_do_reflection:301 - Reflection: Thought: I have found a medium-severity issue with invalid UTF-8 encoding in the file, but no critical or high-severity issues have been detected so far. The most important thing left to check is the 
+2026-06-04 08:08:11.361 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [5]: 1591 chars
+2026-06-04 08:08:11.361 | SUCCESS  | src.agent.react_loop:_handle_finish:315 - [b1842679] Agent finished review
+2026-06-04 08:08:11.361 | SUCCESS  | src.agent.react_loop:run:194 - [b1842679] Review complete: 1 issues, 3 steps, 6.5s
+2026-06-04 08:08:12.597 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for auth.py: 1 issues, 0 new patterns
+2026-06-04 08:08:13.248 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for data_processor.py (126 chars)
+2026-06-04 08:08:13.248 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-04 08:08:13.249 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-04 08:08:13.249 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-04 08:08:13.249 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-04 08:08:13.249 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-04 08:08:13.250 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-04 08:08:13.250 | INFO     | src.agent.react_loop:run:110 - [f5644464] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_8su6hfpv\data_processor.py (risk=0.00)
+2026-06-04 08:08:13.252 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-04 08:08:13.882 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [6]: 502 chars
+2026-06-04 08:08:13.884 | INFO     | src.agent.react_loop:run:163 - [f5644464] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\data_processor.py', 'start_line': 1, 'end_line': None})
+2026-06-04 08:08:14.645 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [7]: 593 chars
+2026-06-04 08:08:14.645 | INFO     | src.agent.react_loop:run:163 - [f5644464] Step 1: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\data_processor.py'})
+2026-06-04 08:08:15.558 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [8]: 682 chars
+2026-06-04 08:08:15.559 | INFO     | src.agent.react_loop:run:163 - [f5644464] Step 2: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\data_processor.py'})
+2026-06-04 08:08:16.431 | INFO     | src.agent.react_loop:_do_reflection:295 - [f5644464] Reflection at step 3
+2026-06-04 08:08:17.436 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [9]: 519 chars
+2026-06-04 08:08:17.436 | INFO     | src.agent.react_loop:_do_reflection:301 - Reflection: Thought: I have found a medium-severity issue with invalid UTF-8 encoding in the file. The risk score is unknown, but since it's 0.000, it doesn't indicate a high risk. The most important thing left t
+2026-06-04 08:08:18.429 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [10]: 670 chars
+2026-06-04 08:08:18.429 | INFO     | src.agent.react_loop:run:163 - [f5644464] Step 3: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\data_processor.py', 'metric': 'cc'})
+2026-06-04 08:08:21.511 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [11]: 398 chars
+2026-06-04 08:08:21.511 | INFO     | src.agent.react_loop:run:163 - [f5644464] Step 4: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\data_processor.py'})
+2026-06-04 08:08:31.251 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [12]: 1353 chars
+2026-06-04 08:08:31.252 | SUCCESS  | src.agent.react_loop:_handle_finish:315 - [f5644464] Agent finished review
+2026-06-04 08:08:31.253 | SUCCESS  | src.agent.react_loop:run:194 - [f5644464] Review complete: 1 issues, 5 steps, 18.0s
+2026-06-04 08:08:32.433 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for data_processor.py: 1 issues, 0 new patterns
+2026-06-04 08:08:33.003 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for api_client.py (235 chars)
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-04 08:08:33.004 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-04 08:08:33.008 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-04 08:08:33.008 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-04 08:08:33.008 | INFO     | src.agent.react_loop:run:110 - [6d7d26bf] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_8su6hfpv\api_client.py (risk=0.00)
+2026-06-04 08:08:33.009 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-04 08:08:40.115 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [13]: 489 chars
+2026-06-04 08:08:40.115 | INFO     | src.agent.react_loop:run:163 - [6d7d26bf] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\api_client.py'})
+2026-06-04 08:08:45.395 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [14]: 807 chars
+2026-06-04 08:08:45.397 | INFO     | src.agent.react_loop:run:163 - [6d7d26bf] Step 1: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\api_client.py'})
+2026-06-04 08:08:50.760 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [15]: 891 chars
+2026-06-04 08:08:50.760 | INFO     | src.agent.react_loop:run:163 - [6d7d26bf] Step 2: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\api_client.py'})
+2026-06-04 08:08:51.906 | INFO     | src.agent.react_loop:_do_reflection:295 - [6d7d26bf] Reflection at step 3
+2026-06-04 08:08:54.088 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [16]: 564 chars
+2026-06-04 08:08:54.088 | INFO     | src.agent.react_loop:_do_reflection:301 - Reflection: Thought: I have found a medium-severity issue with invalid UTF-8 encoding in the file. The risk score is unknown, but since it's 0.000, it doesn't indicate a high risk. The most important thing left t
+2026-06-04 08:09:01.393 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [17]: 830 chars
+2026-06-04 08:09:01.395 | INFO     | src.agent.react_loop:run:163 - [6d7d26bf] Step 3: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_day2_8su6hfpv\\\\api_client.py'})
+2026-06-04 08:09:09.706 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [18]: 1582 chars
+2026-06-04 08:09:09.707 | SUCCESS  | src.agent.react_loop:_handle_finish:315 - [6d7d26bf] Agent finished review
+2026-06-04 08:09:09.707 | SUCCESS  | src.agent.react_loop:run:194 - [6d7d26bf] Review complete: 1 issues, 4 steps, 36.7s
+2026-06-04 08:09:12.161 | INFO     | src.memory.memory_writer:_detect_and_promote_patterns:372 - New pattern promoted: MEDIUM style issues across 3 files
+2026-06-04 08:09:12.163 | SUCCESS  | src.memory.memory_writer:write_review:86 - Memory written for api_client.py: 1 issues, 1 new patterns
+2026-06-04 08:09:12.163 | INFO     | src.agent.orchestrator:_review_single_file:297 - New patterns detected: 1
+2026-06-04 08:09:12.163 | SUCCESS  | src.agent.orchestrator:review_repo:213 - [f470d459] Session complete — 3 files, 3 issues, 61.2s
+2026-06-04 08:09:14.307 | SUCCESS  | src.memory.neo4j_client:connect:80 - Connected to Neo4j at neo4j+s://840d909e.databases.neo4j.io
+2026-06-04 08:09:15.149 | SUCCESS  | src.memory.neo4j_client:initialize_schema:120 - Neo4j schema initialized
+2026-06-04 08:09:15.149 | SUCCESS  | src.agent.orchestrator:__init__:106 - Memory layer ready (Neo4j connected)
+2026-06-04 08:09:15.149 | INFO     | src.agent.orchestrator:review_repo:148 - [79c50d8e] Starting repo review: https://github.com/example/day2-test-repo
+2026-06-04 08:09:15.152 | INFO     | src.agent.orchestrator:review_repo:172 - [79c50d8e] Reviewing 1 files
+2026-06-04 08:09:15.677 | INFO     | src.agent.orchestrator:_review_single_file:264 - Retrieved memory context for auth.py (478 chars)
+2026-06-04 08:09:15.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-04 08:09:15.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-04 08:09:15.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-04 08:09:15.677 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: search_past_issues
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_review_history
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_patterns
+2026-06-04 08:09:15.682 | DEBUG    | src.tools.memory_tools:register_memory_tools:291 - Memory tools registered: search_past_issues, get_file_review_history, get_repo_patterns
+2026-06-04 08:09:15.682 | INFO     | src.agent.react_loop:run:110 - [7a443451] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_day2_8su6hfpv\auth.py (risk=0.00)
+2026-06-04 08:09:15.684 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-04 08:09:16.082 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 1s (attempt 1/3)
+2026-06-04 08:09:17.271 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 2s (attempt 2/3)
+2026-06-04 08:09:19.466 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 4s (attempt 3/3)
+2026-06-04 08:09:23.479 | ERROR    | src.agent.react_loop:run:133 - LLM call failed: Groq API failed after 3 retries (rate limit)
+2026-06-04 08:09:23.479 | SUCCESS  | src.agent.react_loop:run:194 - [7a443451] Review complete: 0 issues, 0 steps, 7.8s
+2026-06-04 08:09:23.479 | SUCCESS  | src.agent.orchestrator:review_repo:213 - [79c50d8e] Session complete — 1 files, 0 issues, 7.8s
+2026-06-04 08:09:23.498 | SUCCESS  | reports.generator:save_session_report:71 - Report saved → D:\Data Science\projects\code-review-agent\reports\day2-test-repo\f470d459  (3 issues across 3 files)

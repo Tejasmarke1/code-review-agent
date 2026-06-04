@@ -25,3 +25,98 @@
 2026-06-02 14:54:11.267 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [7]: 1474 chars
 2026-06-02 14:54:11.269 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [52b98a0d] Agent finished review
 2026-06-02 14:54:11.269 | SUCCESS  | src.agent.react_loop:run:191 - [52b98a0d] Review complete: 0 issues, 5 steps, 39.5s
+2026-06-03 16:07:36.778 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 16:07:36.782 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 16:07:36.786 | INFO     | src.agent.react_loop:run:110 - [63dca61b] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_test_hwfyelau\buggy_module.py (risk=0.87)
+2026-06-03 16:07:36.786 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 16:07:37.927 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 476 chars
+2026-06-03 16:07:37.927 | INFO     | src.agent.react_loop:run:163 - [63dca61b] Step 0: read_file({'file_path': 'C:\\Users\\tejas\\AppData\\Local\\Temp\\cra_test_hwfyelau\\buggy_module.py'})
+2026-06-03 16:07:38.818 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 590 chars
+2026-06-03 16:07:38.818 | INFO     | src.agent.react_loop:run:163 - [63dca61b] Step 1: run_bandit({'file_path': 'C:\\Users\\tejas\\AppData\\Local\\Temp\\cra_test_hwfyelau\\buggy_module.py'})
+2026-06-03 16:07:40.643 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 729 chars
+2026-06-03 16:07:40.643 | INFO     | src.agent.react_loop:run:163 - [63dca61b] Step 2: run_ruff({'file_path': 'C:\\Users\\tejas\\AppData\\Local\\Temp\\cra_test_hwfyelau\\buggy_module.py'})
+2026-06-03 16:07:40.765 | INFO     | src.agent.react_loop:_do_reflection:292 - [63dca61b] Reflection at step 3
+2026-06-03 16:07:41.419 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 543 chars
+2026-06-03 16:07:41.419 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: Although the file has been read and initial security and style checks have been performed using run_bandit and run_ruff, no issues have been found yet, but the HIGH risk score suggests that a
+2026-06-03 16:07:41.682 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 1s (attempt 1/3)
+2026-06-03 16:07:42.836 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 2s (attempt 2/3)
+2026-06-03 16:07:44.997 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 4s (attempt 3/3)
+2026-06-03 16:07:48.998 | ERROR    | src.agent.react_loop:run:133 - LLM call failed: Groq API failed after 3 retries (rate limit)
+2026-06-03 16:07:48.999 | SUCCESS  | src.agent.react_loop:run:191 - [63dca61b] Review complete: 0 issues, 3 steps, 12.2s
+2026-06-03 16:10:26.371 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-03 16:10:26.374 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-03 16:10:26.374 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-03 16:10:26.374 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-03 16:10:26.374 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-03 16:10:26.374 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-03 16:10:26.374 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-03 16:10:26.376 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-03 16:10:26.376 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-03 16:10:26.378 | INFO     | src.agent.react_loop:run:110 - [09ae162e] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_test_wb8mace1\buggy_module.py (risk=0.87)
+2026-06-03 16:10:26.378 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-03 16:10:26.782 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 1s (attempt 1/3)
+2026-06-03 16:10:27.980 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 2s (attempt 2/3)
+2026-06-03 16:10:31.116 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 497 chars
+2026-06-03 16:10:31.130 | INFO     | src.agent.react_loop:run:163 - [09ae162e] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_wb8mace1\\\\buggy_module.py'})
+2026-06-03 16:10:31.319 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 1s (attempt 1/3)
+2026-06-03 16:10:32.480 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 2s (attempt 2/3)
+2026-06-03 16:10:34.672 | WARNING  | src.llm.groq_client:complete:93 - Rate limited. Waiting 4s (attempt 3/3)
+2026-06-03 16:10:38.674 | ERROR    | src.agent.react_loop:run:133 - LLM call failed: Groq API failed after 3 retries (rate limit)
+2026-06-03 16:10:38.674 | SUCCESS  | src.agent.react_loop:run:191 - [09ae162e] Review complete: 0 issues, 1 steps, 12.3s
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-04 07:58:52.636 | INFO     | src.agent.react_loop:run:110 - [14e9d9ab] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_test_6t6bm88w\buggy_module.py (risk=0.87)
+2026-06-04 07:58:52.636 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-04 07:58:53.747 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 508 chars
+2026-06-04 07:58:53.749 | INFO     | src.agent.react_loop:run:163 - [14e9d9ab] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_6t6bm88w\\\\buggy_module.py'})
+2026-06-04 07:58:54.624 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 684 chars
+2026-06-04 07:58:54.624 | INFO     | src.agent.react_loop:run:163 - [14e9d9ab] Step 1: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_6t6bm88w\\\\buggy_module.py'})
+2026-06-04 07:59:27.431 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 622 chars
+2026-06-04 07:59:27.431 | INFO     | src.agent.react_loop:run:163 - [14e9d9ab] Step 2: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_6t6bm88w\\\\buggy_module.py'})
+2026-06-04 07:59:28.019 | INFO     | src.agent.react_loop:_do_reflection:292 - [14e9d9ab] Reflection at step 3
+2026-06-04 07:59:30.067 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 640 chars
+2026-06-04 07:59:30.067 | INFO     | src.agent.react_loop:_do_reflection:298 - Reflection: Thought: Although the file has been read and initial checks with run_ruff and run_bandit have been performed, no issues have been found yet, but the HIGH risk score suggests that a deeper investigatio
+2026-06-04 07:59:46.480 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [5]: 693 chars
+2026-06-04 07:59:46.480 | INFO     | src.agent.react_loop:run:163 - [14e9d9ab] Step 3: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_6t6bm88w\\\\buggy_module.py'})
+2026-06-04 08:00:01.953 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [6]: 1491 chars
+2026-06-04 08:00:01.953 | SUCCESS  | src.agent.react_loop:_handle_finish:312 - [14e9d9ab] Agent finished review
+2026-06-04 08:00:01.953 | SUCCESS  | src.agent.react_loop:run:191 - [14e9d9ab] Review complete: 0 issues, 4 steps, 69.3s
+2026-06-04 08:04:53.852 | DEBUG    | src.tools.registry:register:57 - Registered tool: read_file
+2026-06-04 08:04:53.852 | DEBUG    | src.tools.registry:register:57 - Registered tool: list_python_files
+2026-06-04 08:04:53.852 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_function_context
+2026-06-04 08:04:53.862 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_ruff
+2026-06-04 08:04:53.862 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_bandit
+2026-06-04 08:04:53.862 | DEBUG    | src.tools.registry:register:57 - Registered tool: run_radon
+2026-06-04 08:04:53.862 | DEBUG    | src.tools.registry:register:57 - Registered tool: check_imports
+2026-06-04 08:04:53.862 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_repo_risk_scores
+2026-06-04 08:04:53.863 | DEBUG    | src.tools.registry:register:57 - Registered tool: get_file_explanation
+2026-06-04 08:04:53.864 | INFO     | src.agent.react_loop:run:110 - [0ea5e1a2] Starting review: C:\Users\tejas\AppData\Local\Temp\cra_test_bth16yj7\buggy_module.py (risk=0.87)
+2026-06-04 08:04:53.865 | DEBUG    | src.tools.registry:register:57 - Registered tool: finish_review
+2026-06-04 08:04:55.435 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [1]: 571 chars
+2026-06-04 08:04:55.435 | INFO     | src.agent.react_loop:run:163 - [0ea5e1a2] Step 0: read_file({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_bth16yj7\\\\buggy_module.py'})
+2026-06-04 08:04:56.424 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [2]: 836 chars
+2026-06-04 08:04:56.424 | INFO     | src.agent.react_loop:run:163 - [0ea5e1a2] Step 1: run_ruff({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_bth16yj7\\\\buggy_module.py'})
+2026-06-04 08:05:09.008 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [3]: 671 chars
+2026-06-04 08:05:09.008 | INFO     | src.agent.react_loop:run:163 - [0ea5e1a2] Step 2: run_bandit({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_bth16yj7\\\\buggy_module.py'})
+2026-06-04 08:05:09.992 | INFO     | src.agent.react_loop:_do_reflection:295 - [0ea5e1a2] Reflection at step 3
+2026-06-04 08:05:11.279 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [4]: 590 chars
+2026-06-04 08:05:11.279 | INFO     | src.agent.react_loop:_do_reflection:301 - Reflection: Thought: I have found several medium and low-severity issues related to unused imports, potential security risks, and coding practices. The most critical issues seem to be related to potential securit
+2026-06-04 08:05:12.182 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [5]: 798 chars
+2026-06-04 08:05:12.182 | INFO     | src.agent.react_loop:run:163 - [0ea5e1a2] Step 3: run_radon({'file_path': 'C:\\\\Users\\\\tejas\\\\AppData\\\\Local\\\\Temp\\\\cra_test_bth16yj7\\\\buggy_module.py'})
+2026-06-04 08:05:25.082 | DEBUG    | src.llm.groq_client:complete:86 - Groq response [6]: 1655 chars
+2026-06-04 08:05:25.083 | SUCCESS  | src.agent.react_loop:_handle_finish:315 - [0ea5e1a2] Agent finished review
+2026-06-04 08:05:25.083 | SUCCESS  | src.agent.react_loop:run:194 - [0ea5e1a2] Review complete: 16 issues, 4 steps, 31.2s
