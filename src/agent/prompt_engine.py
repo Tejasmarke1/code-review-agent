@@ -47,7 +47,11 @@ Rules:
 - Never hallucinate issues — only report what tools confirm or what you can directly see in code
 - If past issues exist in memory, explicitly reference them in your review
 - Be specific: always include line numbers when possible
-- Severity levels: CRITICAL (security/data loss), HIGH (bugs/crashes), MEDIUM (maintainability), LOW (style)"""
+- Severity levels: CRITICAL (security/data loss), HIGH (bugs/crashes), MEDIUM (maintainability), LOW (style)
+-Action Input MUST contain ONLY the exact parameters the tool requires (e.g. file_path).
+  NEVER include file contents, code snippets, or any text in Action Input.
+  Wrong:  Action Input: {"code": "def foo(): ..."}
+  Right:  Action Input: {"file_path": "/path/to/file.py"}"""
 
     def build_initial_prompt(
         self,
@@ -148,9 +152,18 @@ Rules:
             })
 
             # User turn: observation
+            tools_already_called = [step.action for step in state.thought_history]
+
             messages.append({
                 "role": "user",
-                "content": f"Observation: {step.observation}\n\nThought:"
+                "content": (
+                    f"Observation: {last_observation}\n\n"
+                    f"Tools already used this session: {', '.join(tools_already_called)}\n"
+                    f"File being reviewed: {state.file_path}\n"
+                    f"ALWAYS use the full absolute path shown above for file_path arguments.\n"
+                    f"Do NOT repeat a tool you have already used unless the result was an error.\n\n"
+                    f"Thought:"
+                )
             })
 
         return messages

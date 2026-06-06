@@ -2,45 +2,30 @@
 Groq LLM Client
 ================
 Thin wrapper around the Groq API.
-Handles: retries, timeouts, rate limits, response parsing.
-
-Bug fix (Day 3):
-  - Added min_seconds_between_calls=2.0 throttle to prevent back-to-back
-    sessions from hitting the Groq free-tier rate limit.
-  - Increased retry backoff from [1,2,4]s to [4,8,16]s.
-
-Never import this directly in agent code — use via prompt_engine.py.
 """
 
 import time
+from collections import deque
 from typing import Optional
-from openai import OpenAI  # Groq uses OpenAI-compatible API
+
 from loguru import logger
+from openai import OpenAI
+
 import sys
 from pathlib import Path
-
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from configs.config import LLM
 
 
 class GroqClient:
     """
-    OpenAI-compatible client pointed at Groq's API.
-
-    Groq is OpenAI API-compatible so we use the openai SDK
-    with a custom base_url. This is the standard pattern.
-
-    Rate limiting: enforces a minimum interval between successive calls
-    (``_min_interval`` seconds) to stay within Groq's free-tier limits.
-    On 429 responses, retries with [4, 8, 16] second backoffs.
+    OpenAI-compatible client pointed at Groq's API with token-aware
+    rate limiting to handle the free-tier tokens-per-minute constraint.
     """
 
-    def __init__(self):
-        """Initialise the Groq client.
+    TOKEN_LIMIT_PER_MINUTE = 5000
 
-        Raises:
-            ValueError: If GROQ_API_KEY is not set in the environment.
-        """
+    def __init__(self):
         if not LLM["api_key"]:
             raise ValueError(
                 "GROQ_API_KEY not set. Get a free key at https://console.groq.com"
@@ -53,9 +38,30 @@ class GroqClient:
         self.model = LLM["model"]
         self._call_count = 0
         self._total_tokens = 0
-        # Bug fix: throttle to prevent rate limiting on back-to-back sessions
         self._last_call_time: float = 0.0
-        self._min_interval: float = 2.0  # minimum seconds between API calls
+        self._min_interval: float = 4.0
+        self._token_window: deque = deque()  # (timestamp, tokens) pairs
+
+    def _wait_for_token_budget(self, estimated_tokens: int = 500) -> None:
+        """Sleep if the rolling 60-second token window is close to the limit."""
+        now = time.time()
+        while self._token_window and now - self._token_window[0][0] > 60:
+            self._token_window.popleft()
+
+        tokens_used = sum(t for _, t in self._token_window)
+
+        if tokens_used + estimated_tokens > self.TOKEN_LIMIT_PER_MINUTE:
+            if self._token_window:
+                oldest_time = self._token_window[0][0]
+                wait = 60 - (now - oldest_time) + 1.0
+                logger.warning(
+                    f"Token budget: {tokens_used}/{self.TOKEN_LIMIT_PER_MINUTE} used. "
+                    f"Waiting {wait:.1f}s for window to reset"
+                )
+                time.sleep(max(0.0, wait))
+            else:
+                logger.warning("Token window empty but limit reached — waiting 60s")
+                time.sleep(60)
 
     def complete(
         self,
@@ -63,35 +69,20 @@ class GroqClient:
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
     ) -> str:
-        """Send messages to Groq and return the text response.
-
-        Enforces a minimum inter-call interval to respect rate limits.
-        Retries on 429 with exponential backoff [4, 8, 16] seconds.
-        Raises on all other errors after logging.
-
-        Args:
-            messages: OpenAI-format message list, e.g.
-                      [{"role": "user", "content": "Hello"}]
-            temperature: Override the default temperature if provided.
-            max_tokens: Override the default max_tokens if provided.
-
-        Returns:
-            Raw text response string from the model.
-
-        Raises:
-            RuntimeError: If the API continues to rate-limit after 3 retries.
-        """
+        """Send messages to Groq and return the text response."""
         temp = temperature if temperature is not None else LLM["temperature"]
         tokens = max_tokens if max_tokens is not None else LLM["max_tokens"]
 
-        # Throttle: enforce minimum interval between successive calls
         elapsed = time.time() - self._last_call_time
         if elapsed < self._min_interval:
             sleep_for = self._min_interval - elapsed
             logger.debug(f"Throttle: sleeping {sleep_for:.2f}s before Groq call")
             time.sleep(sleep_for)
 
-        for attempt in range(3):
+        self._wait_for_token_budget(estimated_tokens=tokens or 500)
+
+        retry_waits = [4, 8, 16, 32, 60]
+        for attempt in range(5):
             try:
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -99,35 +90,35 @@ class GroqClient:
                     temperature=temp,
                     max_tokens=tokens,
                 )
+                actual_tokens = response.usage.total_tokens if response.usage else 500
+                self._token_window.append((time.time(), actual_tokens))
                 self._last_call_time = time.time()
                 self._call_count += 1
-                self._total_tokens += response.usage.total_tokens if response.usage else 0
+                self._total_tokens += actual_tokens
 
                 content = response.choices[0].message.content
-                logger.debug(f"Groq response [{self._call_count}]: {len(content)} chars")
+                logger.debug(
+                    f"Groq response [{self._call_count}]: "
+                    f"{len(content)} chars, {actual_tokens} tokens"
+                )
                 return content
 
             except Exception as e:
                 err_str = str(e)
                 if "429" in err_str or "rate_limit" in err_str.lower():
-                    # Bug fix: increased from [1,2,4] to [4,8,16] seconds
-                    wait = 4 * (2 ** attempt)  # 4s, 8s, 16s
-                    logger.warning(f"Rate limited. Waiting {wait}s (attempt {attempt+1}/3)")
+                    wait = retry_waits[attempt] if attempt < len(retry_waits) else 60
+                    logger.warning(f"Rate limited. Waiting {wait}s (attempt {attempt+1}/5)")
                     time.sleep(wait)
                     continue
                 logger.error(f"Groq API error: {e}")
                 raise
 
-        raise RuntimeError("Groq API failed after 3 retries (rate limit)")
+        raise RuntimeError("Groq API failed after 5 retries (rate limit)")
 
     def get_usage_stats(self) -> dict:
-        """Return a snapshot of token usage and estimated cost.
-
-        Returns:
-            Dict with keys: total_calls, total_tokens, estimated_cost_usd.
-        """
+        """Return token usage and call count statistics."""
         return {
             "total_calls": self._call_count,
             "total_tokens": self._total_tokens,
-            "estimated_cost_usd": 0.0,  # Groq free tier
+            "estimated_cost_usd": 0.0,
         }

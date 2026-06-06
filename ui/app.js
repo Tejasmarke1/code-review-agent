@@ -1,194 +1,224 @@
 /**
- * Code Review Agent — Frontend
+ * Code Review Agent — UI
+ * Three-panel layout with live SSE agent trace.
  * Pure vanilla JS, no framework, no build step.
- * Talks to FastAPI backend at localhost:8000.
  */
 
 const API = 'http://localhost:8000';
-let currentSession = null;
-let statusTimerInterval = null;
-let statusStartTime = 0;
+let currentEventSource = null;
+let currentIssueCount  = 0;
+let reviewStartTime    = null;
 
 // ── Health check ───────────────────────────────────────────────────────────────
 
 async function checkHealth() {
     try {
-        const res = await fetch(`${API}/health`, { signal: AbortSignal.timeout(5000) });
+        const res  = await fetch(`${API}/health`, { signal: AbortSignal.timeout(5000) });
         const data = await res.json();
-
         const badge = document.getElementById('health-badge');
-        badge.textContent = data.status;
-        badge.className = `badge badge-${data.status}`;
-
-        const uptime = document.getElementById('uptime');
-        uptime.textContent = `up ${formatSeconds(data.uptime_seconds)} · ${data.total_reviews_this_session} reviews`;
+        badge.textContent = `${data.status} · neo4j=${data.neo4j_connected}`;
+        badge.className   = `badge badge-${data.status}`;
+        document.getElementById('uptime').textContent =
+            `up ${formatSeconds(data.uptime_seconds)} · ${data.total_reviews_this_session} reviews`;
     } catch {
-        const badge = document.getElementById('health-badge');
-        badge.textContent = 'offline';
-        badge.className = 'badge badge-unhealthy';
+        document.getElementById('health-badge').textContent = 'offline';
+        document.getElementById('health-badge').className   = 'badge badge-unhealthy';
         document.getElementById('uptime').textContent = '';
     }
 }
 
-// ── Review submission ──────────────────────────────────────────────────────────
+// ── Streaming review ───────────────────────────────────────────────────────────
 
-async function startReview() {
+function startStreamingReview() {
     const repoUrl = document.getElementById('repo-url').value.trim();
-    if (!repoUrl) {
-        showError('Please enter a repository URL.');
-        return;
-    }
-    if (!repoUrl.startsWith('http')) {
-        showError('Repository URL must start with http:// or https://');
-        return;
-    }
+    if (!repoUrl) { alert('Please enter a repository URL.'); return; }
+    if (!repoUrl.startsWith('http')) { alert('URL must start with http:// or https://'); return; }
 
-    const filesRaw = document.getElementById('files-input').value.trim();
-    const files = filesRaw
-        ? filesRaw.split('\n').map(f => f.trim()).filter(Boolean)
-        : null;
-    const maxFiles = parseInt(document.getElementById('max-files').value) || 3;
+    const filesRaw  = document.getElementById('files-input').value.trim();
+    const files     = filesRaw
+        ? filesRaw.split('\n').map(f => f.trim()).filter(Boolean).join(',')
+        : '';
+    const maxFiles  = document.getElementById('max-files').value || 2;
     const useMemory = document.getElementById('use-memory').checked;
-    const useDefectApi = document.getElementById('use-defect-api').checked;
 
-    dismissError();
-    document.getElementById('submit-btn').disabled = true;
-    document.getElementById('results-panel').classList.add('hidden');
-    showStatus('Sending review request to agent...');
+    resetTrace();
+    currentIssueCount = 0;
+    reviewStartTime   = Date.now();
+    updateIssueCount(0);
 
-    try {
-        const res = await fetch(`${API}/review/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                repo_url: repoUrl,
-                files: files,
-                max_files: maxFiles,
-                use_memory: useMemory,
-                use_defect_api: useDefectApi,
-            }),
-            // Long timeout — agent may take several minutes for multi-file reviews
-            signal: AbortSignal.timeout(600_000),
-        });
+    const params = new URLSearchParams({
+        repo_url:   repoUrl,
+        files:      files,
+        max_files:  maxFiles,
+        use_memory: useMemory,
+    });
 
-        if (!res.ok) {
-            let detail = 'Review failed';
-            try { detail = (await res.json()).detail; } catch {}
-            throw new Error(detail);
+    document.getElementById('stream-btn').disabled = true;
+    document.getElementById('stop-btn').disabled   = false;
+    setTraceStatus('&#x1F504; Connecting to agent...', 'running');
+
+    currentEventSource = new EventSource(`${API}/stream/review?${params}`);
+
+    currentEventSource.addEventListener('status', e => {
+        handleStatusEvent(JSON.parse(e.data));
+    });
+    currentEventSource.addEventListener('step', e => {
+        renderTraceStep(JSON.parse(e.data));
+    });
+    currentEventSource.addEventListener('issue', e => {
+        const d = JSON.parse(e.data);
+        renderLiveIssue(d);
+        currentIssueCount++;
+        updateIssueCount(currentIssueCount);
+    });
+    currentEventSource.addEventListener('error', e => {
+        try { renderTraceError(JSON.parse(e.data).message); } catch { renderTraceError('Connection error'); }
+    });
+    currentEventSource.addEventListener('done', e => {
+        handleDoneEvent(JSON.parse(e.data));
+        closeStream();
+    });
+    currentEventSource.onerror = () => {
+        if (currentEventSource && currentEventSource.readyState === EventSource.CLOSED) {
+            setTraceStatus('&#x26A0; Connection lost', 'error');
+            closeStream();
         }
-
-        const session = await res.json();
-        currentSession = session;
-        hideStatus();
-        renderResults(session);
-        loadMemoryStats();
-
-    } catch (e) {
-        hideStatus();
-        showError(e.message || 'Review request failed. Is the API running?');
-    } finally {
-        document.getElementById('submit-btn').disabled = false;
-    }
+    };
 }
 
-// ── Render results ─────────────────────────────────────────────────────────────
-
-function renderResults(session) {
-    document.getElementById('results-panel').classList.remove('hidden');
-
-    // Session header
-    document.getElementById('session-id-label').textContent = `Session: ${session.session_id}`;
-    document.getElementById('session-time-label').textContent =
-        `${new Date(session.started_at).toLocaleString()} · ${session.total_elapsed_seconds.toFixed(1)}s`;
-
-    // Summary cards
-    const cards = document.getElementById('summary-cards');
-    cards.innerHTML = [
-        { n: session.files_reviewed,            label: 'Files Reviewed', cls: '' },
-        { n: session.total_issues,              label: 'Total Issues',   cls: '' },
-        { n: session.critical_issues,           label: 'Critical',       cls: session.critical_issues > 0 ? 'card-critical' : '' },
-        { n: session.high_issues,               label: 'High',           cls: session.high_issues > 0    ? 'card-high'     : '' },
-        { n: session.medium_issues,             label: 'Medium',         cls: '' },
-        { n: session.low_issues,                label: 'Low',            cls: '' },
-        { n: session.patterns_detected,         label: 'Patterns',       cls: session.patterns_detected > 0 ? 'card-pattern' : '' },
-        { n: session.total_elapsed_seconds.toFixed(1) + 's', label: 'Total Time', cls: '' },
-    ].map(c => `
-        <div class="card ${c.cls}">
-            <div class="card-number">${c.n}</div>
-            <div class="card-label">${c.label}</div>
-        </div>
-    `).join('');
-
-    // File tabs
-    const tabs = document.getElementById('file-tabs');
-    tabs.innerHTML = session.file_results.map((f, i) => {
-        const name = baseName(f.file_path);
-        const sev = getHighestSeverity(f.issues).toLowerCase();
-        return `<button class="tab ${i === 0 ? 'active' : ''} tab-sev-${sev}"
-                        onclick="showFile(${i})">${escapeHtml(name)}</button>`;
-    }).join('');
-
-    // Repo summary
-    document.getElementById('repo-summary-text').textContent = session.repo_summary;
-
-    if (session.file_results.length > 0) {
-        showFile(0);
+function stopReview() {
+    if (currentEventSource) {
+        currentEventSource.close();
+        currentEventSource = null;
+        setTraceStatus('&#x23F9; Stopped by user', 'stopped');
     }
+    document.getElementById('stream-btn').disabled = false;
+    document.getElementById('stop-btn').disabled   = true;
 }
 
-function showFile(index) {
-    const file = currentSession.file_results[index];
+function closeStream() {
+    if (currentEventSource) { currentEventSource.close(); currentEventSource = null; }
+    document.getElementById('stream-btn').disabled = false;
+    document.getElementById('stop-btn').disabled   = true;
+}
 
-    // Update active tab
-    document.querySelectorAll('.tab').forEach((t, i) =>
-        t.classList.toggle('active', i === index));
+// ── Trace rendering ────────────────────────────────────────────────────────────
 
-    const issuesHtml = file.issues.length === 0
-        ? '<p class="no-issues">&#10003; No issues found</p>'
-        : file.issues.map(issue => `
-            <div class="issue issue-${issue.severity.toLowerCase()}">
-                <div class="issue-header">
-                    <span class="severity-badge sev-${issue.severity.toLowerCase()}">${issue.severity}</span>
-                    <span class="issue-title">${escapeHtml(issue.title)}</span>
-                    ${issue.line_number != null ? `<span class="line-num">Line ${issue.line_number}</span>` : ''}
-                    <span class="tool-badge">${issue.source_tool}</span>
-                    <span class="cat-badge">${issue.category}</span>
-                </div>
-                <p class="issue-desc">${escapeHtml(issue.description)}</p>
-                <div class="suggestion">
-                    <strong>Suggestion:</strong> ${escapeHtml(issue.suggestion)}
-                </div>
-            </div>
-        `).join('');
+function resetTrace() {
+    document.getElementById('agent-trace').innerHTML = '';
+    document.getElementById('issues-live').innerHTML =
+        '<p class="placeholder-text">Issues appear here as the agent finds them.</p>';
+    document.getElementById('session-summary').classList.add('hidden');
+    setTraceStatus('Waiting...', 'waiting');
+}
 
-    const reviewHtml = file.final_review
-        ? `<details class="agent-review">
-               <summary>Agent Narrative Review</summary>
-               <pre>${escapeHtml(file.final_review)}</pre>
-           </details>`
-        : '';
+function renderTraceStep(data) {
+    const trace = document.getElementById('agent-trace');
+    const ph    = trace.querySelector('.trace-placeholder');
+    if (ph) ph.remove();
 
-    const summaryHtml = file.summary
-        ? `<div class="summary-box">${escapeHtml(file.summary)}</div>`
-        : '';
+    const cat     = getToolCategory(data.action);
+    const elapsed = reviewStartTime ? `${((Date.now() - reviewStartTime) / 1000).toFixed(1)}s` : '';
 
-    document.getElementById('file-content').innerHTML = `
-        <div class="file-panel">
-            <div class="file-header">
-                <h3>${escapeHtml(baseName(file.file_path))}</h3>
-                <span class="risk-score risk-${file.risk_label.toLowerCase()}">
-                    ${file.risk_score.toFixed(3)} &bull; ${file.risk_label}
-                </span>
-                <span class="file-stats">
-                    ${file.steps_taken} steps &bull; ${file.elapsed_seconds.toFixed(1)}s &bull; ${file.status}
-                </span>
-            </div>
-            ${summaryHtml}
-            <h4 class="section-title">Issues (${file.issues.length})</h4>
-            ${issuesHtml}
-            ${reviewHtml}
+    const el = document.createElement('div');
+    el.className = 'trace-step trace-enter';
+    el.innerHTML = `
+        <div class="step-header">
+            <span class="step-num">Step ${(data.step_number ?? 0) + 1}</span>
+            <span class="step-file">${escapeHtml(getFileName(data.file_path))}</span>
+            <span class="step-time">${elapsed}</span>
         </div>
+        <div class="step-row">
+            <span class="step-tag tag-thought">Thought</span>
+            <span class="thought-text">${escapeHtml((data.thought || '...').slice(0, 200))}</span>
+        </div>
+        <div class="step-row">
+            <span class="step-tag tag-action tool-${cat}">${escapeHtml(data.action || '')}</span>
+            <code class="action-code">${escapeHtml(formatInput(data.action_input))}</code>
+        </div>
+        ${data.observation_preview ? `
+        <div class="step-row">
+            <span class="step-tag tag-obs">Obs</span>
+            <code class="obs-code">${escapeHtml(data.observation_preview.slice(0, 180))}...</code>
+        </div>` : ''}
     `;
+    trace.appendChild(el);
+    trace.scrollTop = trace.scrollHeight;
+    requestAnimationFrame(() => el.classList.remove('trace-enter'));
+}
+
+function renderLiveIssue(data) {
+    const container = document.getElementById('issues-live');
+    const ph = container.querySelector('.placeholder-text');
+    if (ph) ph.remove();
+
+    const el = document.createElement('div');
+    el.className = `live-issue issue-${(data.severity || 'low').toLowerCase()} live-enter`;
+    el.innerHTML = `
+        <div class="live-issue-header">
+            <span class="sev-badge sev-${(data.severity || '').toLowerCase()}">${data.severity}</span>
+            <span class="issue-fname">${escapeHtml(getFileName(data.file_path))}</span>
+            ${data.line_number != null ? `<span class="line-num">L${data.line_number}</span>` : ''}
+        </div>
+        <div class="live-issue-title">${escapeHtml(data.title)}</div>
+    `;
+    container.prepend(el);
+    requestAnimationFrame(() => el.classList.remove('live-enter'));
+}
+
+function renderTraceError(msg) {
+    const trace = document.getElementById('agent-trace');
+    const el = document.createElement('div');
+    el.className = 'trace-error';
+    el.textContent = `⚠ ${msg}`;
+    trace.appendChild(el);
+    trace.scrollTop = trace.scrollHeight;
+}
+
+function addTraceMarker(text) {
+    const trace = document.getElementById('agent-trace');
+    const el = document.createElement('div');
+    el.className = 'trace-marker';
+    el.textContent = text;
+    trace.appendChild(el);
+    trace.scrollTop = trace.scrollHeight;
+}
+
+function handleStatusEvent(data) {
+    if (data.type === 'session_started') {
+        setTraceStatus(`🔄 Session ${data.session_id} — reviewing...`, 'running');
+    } else if (data.type === 'file_complete') {
+        addTraceMarker(`✓ ${getFileName(data.file_path || '')} complete — ${data.issues_count || 0} issues`);
+    }
+}
+
+function handleDoneEvent(data) {
+    if (data.error) {
+        setTraceStatus(`❌ Failed: ${data.error}`, 'error');
+        return;
+    }
+    const elapsed = reviewStartTime
+        ? `${((Date.now() - reviewStartTime) / 1000).toFixed(1)}s`
+        : `${(data.elapsed_seconds || 0).toFixed(1)}s`;
+
+    setTraceStatus(
+        `✅ Complete — ${data.files_reviewed}f, ${data.total_issues}i, ${elapsed}`,
+        'done'
+    );
+
+    document.getElementById('session-summary').classList.remove('hidden');
+    document.getElementById('summary-content').innerHTML = `
+        <div class="sum-row"><span>Files reviewed</span><strong>${data.files_reviewed}</strong></div>
+        <div class="sum-row"><span>Total issues</span><strong>${data.total_issues}</strong></div>
+        <div class="sum-row"><span>Critical</span><strong class="sev-critical-txt">${data.critical_issues || 0}</strong></div>
+        <div class="sum-row"><span>High</span><strong class="sev-high-txt">${data.high_issues || 0}</strong></div>
+        <div class="sum-row"><span>Patterns</span><strong>${data.patterns || 0}</strong></div>
+        <div class="sum-row"><span>Time</span><strong>${elapsed}</strong></div>
+        ${data.session_id ? `<div class="sum-row"><span>Session</span><code>${data.session_id}</code></div>` : ''}
+    `;
+
+    addToSessionHistory(data);
+    loadMemoryStats();
 }
 
 // ── Memory stats ───────────────────────────────────────────────────────────────
@@ -196,95 +226,90 @@ function showFile(index) {
 async function loadMemoryStats() {
     const panel = document.getElementById('memory-stats');
     try {
-        const res = await fetch(`${API}/memory/stats`);
+        const res  = await fetch(`${API}/memory/stats`);
         const data = await res.json();
 
         if (!data.connected) {
-            panel.innerHTML = '<p class="warning">Neo4j not connected &mdash; running without memory</p>';
+            panel.innerHTML = '<p class="warning">Neo4j not connected</p>';
             return;
         }
 
         const rows = Object.entries(data.node_counts)
             .sort(([, a], [, b]) => b - a)
             .map(([label, count]) =>
-                `<tr><td class="node-label">${label}</td><td class="node-count">${count}</td></tr>`)
+                `<div class="stat-row"><span class="stat-lbl">${label}</span><span class="stat-val">${count}</span></div>`)
             .join('');
 
         panel.innerHTML = `
-            <table class="memory-table">
-                <thead><tr><th>Node Type</th><th>Count</th></tr></thead>
-                <tbody>${rows}</tbody>
-            </table>
-            <p class="memory-meta">
-                ${data.total_relationships} relationships &bull;
-                ${data.total_patterns} patterns detected &bull;
-                ${data.total_reviews} reviews total
-            </p>
+            <div class="stats-grid">${rows}</div>
+            <p class="stats-footer">${data.total_relationships} rels &bull; ${data.total_patterns} patterns</p>
         `;
     } catch {
-        panel.innerHTML = '<p class="warning">Could not load memory stats</p>';
+        panel.innerHTML = '<p class="warning">Could not load stats</p>';
     }
 }
 
-// ── Status helpers ─────────────────────────────────────────────────────────────
+// ── Session history ────────────────────────────────────────────────────────────
 
-function showStatus(msg) {
-    document.getElementById('status-bar').classList.remove('hidden');
-    document.getElementById('status-text').textContent = msg;
-    statusStartTime = Date.now();
-    clearInterval(statusTimerInterval);
-    statusTimerInterval = setInterval(() => {
-        const elapsed = ((Date.now() - statusStartTime) / 1000).toFixed(0);
-        document.getElementById('status-timer').textContent = `${elapsed}s`;
-    }, 1000);
-}
-
-function hideStatus() {
-    clearInterval(statusTimerInterval);
-    document.getElementById('status-bar').classList.add('hidden');
-    document.getElementById('status-timer').textContent = '';
-}
-
-function showError(msg) {
-    const banner = document.getElementById('error-banner');
-    document.getElementById('error-text').textContent = msg;
-    banner.classList.remove('hidden');
-}
-
-function dismissError() {
-    document.getElementById('error-banner').classList.add('hidden');
+function addToSessionHistory(data) {
+    const list = document.getElementById('session-list');
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `
+        <span class="hist-id">${data.session_id || 'unknown'}</span>
+        <span class="hist-stats">${data.files_reviewed || 0}f &bull; ${data.total_issues || 0}i</span>
+    `;
+    list.prepend(item);
+    while (list.children.length > 5) list.removeChild(list.lastChild);
 }
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
 
-function baseName(path) {
+function setTraceStatus(html, state) {
+    const el = document.getElementById('trace-status');
+    el.innerHTML = html;
+    el.className = `trace-status status-${state}`;
+}
+
+function updateIssueCount(n) {
+    document.getElementById('issue-count').textContent = n;
+}
+
+function getFileName(path) {
+    if (!path) return '';
     return path.split(/[/\\]/).pop() || path;
+}
+
+function getToolCategory(name) {
+    const map = {
+        read_file: 'file', list_python_files: 'file', get_function_context: 'file',
+        run_ruff: 'analysis', run_bandit: 'analysis', run_radon: 'analysis', check_imports: 'analysis',
+        search_past_issues: 'memory', get_file_review_history: 'memory', get_repo_patterns: 'memory',
+        clone_github_repo: 'github', list_github_files: 'github', get_github_file_path: 'github',
+        cleanup_github_clone: 'github', finish_review: 'control',
+    };
+    return map[name] || 'other';
+}
+
+function formatInput(input) {
+    if (!input) return '';
+    const s = typeof input === 'string' ? input : JSON.stringify(input);
+    return s.length > 90 ? s.slice(0, 90) + '...' : s;
 }
 
 function formatSeconds(s) {
     if (s < 60) return `${Math.round(s)}s`;
-    const m = Math.floor(s / 60);
-    const sec = Math.round(s % 60);
-    return `${m}m ${sec}s`;
-}
-
-function getHighestSeverity(issues) {
-    const order = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
-    for (const sev of order) {
-        if (issues.some(i => i.severity === sev)) return sev;
-    }
-    return 'NONE';
+    return `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`;
 }
 
 function escapeHtml(str) {
     if (str == null) return '';
     return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────────
 checkHealth();
-setInterval(checkHealth, 30_000);
+loadMemoryStats();
+setInterval(checkHealth, 30000);

@@ -25,6 +25,8 @@ Yao et al., 2022 — https://arxiv.org/abs/2210.03629
 
 import json
 import re
+from urllib import response
+from urllib import response
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -159,6 +161,39 @@ class ReActLoop:
                 self._handle_finish(state, action_input)
                 break
 
+            # ── Duplicate tool guard ───────────────────────────────────────────
+            # Prevent the agent from re-running a tool it already ran successfully.
+            # Allow repeats only if the previous call produced an error observation.
+            if action != self.FINISH_TOOL and action in state.tools_called:
+                prev_observations = [
+                    s.observation
+                    for s in state.thought_history
+                    if s.action == action
+                ]
+                last_was_error = any(
+                    "error" in o.lower() or "failed" in o.lower() or "exception" in o.lower()
+                    for o in prev_observations
+                )
+                if not last_was_error:
+                    logger.warning(
+                        f"[{state.session_id}] Agent tried to repeat '{action}' "
+                        f"which already succeeded — injecting skip observation"
+                    )
+                    observation = (
+                        f"Skipped: '{action}' was already called successfully. "
+                        f"Do not call it again. "
+                        f"Review the earlier observation and proceed to the next "
+                        f"untried tool. Always use the full absolute path: {state.file_path}"
+                    )
+                    state.add_step(thought, action, action_input, observation)
+                    messages = self.prompt.build_continuation_prompt(state, observation)
+                    messages.append({
+                        "role": "user",
+                        "content": f"Observation: {observation}\n\nThought:"
+                    })
+                    continue
+            # ──────────────────────────────────────────────────────────────────
+
             # Execute the chosen tool
             logger.info(
                 f"[{state.session_id}] Step {state.current_step}: "
@@ -171,10 +206,43 @@ class ReActLoop:
                 observation = observation[:3000] + "\n... [truncated]"
 
             # Auto-populate state.issues_found from tool output
+            issues_before = len(state.issues_found)
             self._extract_issues_from_observation(action, observation, state)
 
             # Record the step and build the continuation prompt
             state.add_step(thought, action, action_input, observation)
+
+            # Fire streaming callbacks if set by SSE layer
+            step_cb  = getattr(self, "_streaming_step_cb",  None)
+            issue_cb = getattr(self, "_streaming_issue_cb", None)
+
+            if step_cb:
+                try:
+                    step_cb({
+                        "session_id":          state.session_id,
+                        "file_path":           state.file_path,
+                        "step_number":         state.current_step - 1,
+                        "thought":             thought[:300],
+                        "action":              action,
+                        "action_input":        action_input,
+                        "observation_preview": observation[:200],
+                        "timestamp":           __import__("time").time(),
+                    })
+                except Exception as _cb_err:
+                    logger.debug(f"Step callback error (non-fatal): {_cb_err}")
+
+            if issue_cb:
+                for new_issue in state.issues_found[issues_before:]:
+                    try:
+                        issue_cb({
+                            "file_path":   state.file_path,
+                            "title":       new_issue.title,
+                            "severity":    new_issue.severity.value,
+                            "category":    new_issue.category,
+                            "line_number": new_issue.line_number,
+                        })
+                    except Exception as _cb_err:
+                        logger.debug(f"Issue callback error (non-fatal): {_cb_err}")
 
             messages = self.prompt.build_continuation_prompt(state, observation)
             messages.append({
@@ -200,7 +268,6 @@ class ReActLoop:
         return state
 
     # ── Private Methods ────────────────────────────────────────────────────────
-
     def _parse_response(
         self, response: str, state: AgentState
     ) -> Optional[tuple[str, str, dict]]:
@@ -213,7 +280,8 @@ class ReActLoop:
             Action Input: <json object>
 
         Handles: missing fields, single-quoted JSON, trailing commas in JSON,
-        bare file paths as Action Input, and falls back gracefully on any error.
+        bare file paths as Action Input, hallucinated code-content keys,
+        and falls back gracefully on any error.
 
         Args:
             response: Raw text response from the LLM.
@@ -222,6 +290,9 @@ class ReActLoop:
         Returns:
             (thought, action, action_input) tuple, or None if parsing fails.
         """
+        # Keys that indicate the LLM hallucinated file contents into Action Input
+        SUSPICIOUS_KEYS = {"code", "content", "source", "text", "snippet", "file_content"}
+
         try:
             # Extract Thought
             thought_match = re.search(
@@ -276,12 +347,27 @@ class ReActLoop:
                         )
                         return None
 
+            # Guard: reject hallucinated file-content keys
+            if SUSPICIOUS_KEYS & set(action_input.keys()):
+                self._consecutive_parse_failures += 1
+                logger.warning(
+                    f"[{state.session_id}] Action Input contains hallucinated keys "
+                    f"{set(action_input.keys()) & SUSPICIOUS_KEYS} — "
+                    f"LLM embedded file contents instead of tool params. "
+                    f"Action was: {action}"
+                )
+                return None
+
+            # Reset failure counter on a clean parse
+            self._consecutive_parse_failures = 0
+
             return thought, action, action_input
 
         except Exception as e:
             logger.warning(f"[{state.session_id}] Parse error: {e}")
             self._consecutive_parse_failures += 1
             return None
+        
 
     def _do_reflection(self, state: AgentState) -> None:
         """Run a reflection step — ask the agent to summarise and reprioritise.

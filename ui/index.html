@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Review Agent</title>
-    <link rel="stylesheet" href="/ui/styles.css">
+    <link rel="stylesheet" href="ui/styles.css">
 </head>
 <body>
-<div class="container">
+<div class="app-layout">
 
     <!-- Header -->
-    <header>
+    <header class="app-header">
         <div class="header-left">
-            <span class="logo">&#x1F916;</span>
-            <h1>Code Review Agent</h1>
+            <h1>🤖 Code Review Agent</h1>
+            <span class="subtitle">Autonomous &bull; Memory-aware &bull; ReAct loop</span>
         </div>
         <div class="header-right">
             <div id="health-badge" class="badge">checking...</div>
@@ -21,96 +21,94 @@
         </div>
     </header>
 
-    <!-- Input Panel -->
-    <section class="input-panel">
-        <h2>Submit Review</h2>
+    <!-- Three-column layout -->
+    <div class="main-columns">
 
-        <div class="form-group">
-            <label for="repo-url">Repository URL <span class="required">*</span></label>
-            <input type="text" id="repo-url"
-                placeholder="https://github.com/pallets/flask"
-                value="">
-        </div>
+        <!-- LEFT: Input Panel -->
+        <aside class="panel panel-left">
+            <h2>Review Setup</h2>
 
-        <div class="form-group">
-            <label for="files-input">
-                Files to review
-                <span class="hint">(one absolute path per line — leave empty for auto-detect)</span>
-            </label>
-            <textarea id="files-input" rows="3"
-                placeholder="C:\projects\app\src\auth.py&#10;C:\projects\app\src\utils.py&#10;(or leave empty)">
-            </textarea>
-        </div>
-
-        <div class="form-row">
-            <label class="checkbox-label">
-                <input type="checkbox" id="use-memory" checked>
-                <span>Use Neo4j memory</span>
-            </label>
-            <label class="checkbox-label">
-                <input type="checkbox" id="use-defect-api">
-                <span>Use Defect Prediction API</span>
-            </label>
-            <label class="num-label">
-                Max files:
-                <input type="number" id="max-files" value="3" min="1" max="10">
-            </label>
-        </div>
-
-        <button id="submit-btn" onclick="startReview()">&#9654; Start Review</button>
-    </section>
-
-    <!-- Status Bar -->
-    <div id="status-bar" class="status-bar hidden">
-        <div class="spinner"></div>
-        <span id="status-text">Initializing...</span>
-        <span id="status-timer" class="timer"></span>
-    </div>
-
-    <!-- Error Banner -->
-    <div id="error-banner" class="error-banner hidden">
-        <span id="error-text"></span>
-        <button onclick="dismissError()">&#x2715;</button>
-    </div>
-
-    <!-- Results Panel -->
-    <section id="results-panel" class="hidden">
-
-        <!-- Session header -->
-        <div class="session-header">
-            <span class="session-id" id="session-id-label"></span>
-            <span class="session-time" id="session-time-label"></span>
-        </div>
-
-        <!-- Summary cards -->
-        <div class="summary-cards" id="summary-cards"></div>
-
-        <!-- File tabs -->
-        <div class="tabs-wrapper">
-            <div class="tabs" id="file-tabs"></div>
-        </div>
-
-        <!-- Per-file content -->
-        <div id="file-content"></div>
-
-        <!-- Repo summary (collapsed by default) -->
-        <details class="repo-summary-details">
-            <summary>Full Repo Report (markdown)</summary>
-            <pre id="repo-summary-text"></pre>
-        </details>
-
-        <!-- Memory panel -->
-        <div class="memory-panel" id="memory-panel">
-            <div class="memory-header">
-                <h3>&#x1F9E0; Graph Memory</h3>
-                <button class="refresh-btn" onclick="loadMemoryStats()">&#x21BB; Refresh</button>
+            <div class="form-group">
+                <label>Repository URL <span class="required">*</span></label>
+                <input type="text" id="repo-url"
+                    placeholder="https://github.com/pallets/flask">
             </div>
-            <div id="memory-stats"><p class="dim">Loading...</p></div>
-        </div>
 
-    </section>
+            <div class="form-group">
+                <label>Specific files
+                    <span class="hint">(absolute paths, one per line, or leave empty)</span>
+                </label>
+                <textarea id="files-input" rows="4"
+                    placeholder="C:\projects\app\src\auth.py&#10;Leave empty to auto-detect"></textarea>
+            </div>
 
+            <div class="form-row">
+                <label class="inline-label">
+                    Max files:
+                    <input type="number" id="max-files" value="2" min="1" max="5">
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="use-memory" checked>
+                    <span>Neo4j memory</span>
+                </label>
+            </div>
+
+            <div class="button-group">
+                <button id="stream-btn" onclick="startStreamingReview()">&#9654; Start Review (Live)</button>
+                <button id="stop-btn" onclick="stopReview()" disabled class="btn-secondary">&#9632; Stop</button>
+            </div>
+
+            <!-- Session history -->
+            <div class="session-history">
+                <h3>Recent Sessions</h3>
+                <div id="session-list"></div>
+            </div>
+        </aside>
+
+        <!-- CENTER: Live Agent Trace -->
+        <main class="panel panel-center">
+            <div class="panel-header">
+                <h2>Agent Trace</h2>
+                <span id="trace-status" class="trace-status status-waiting">Waiting...</span>
+            </div>
+            <div id="agent-trace" class="agent-trace">
+                <div class="trace-placeholder">
+                    Start a review to see the agent reasoning in real time.
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT: Issues + Memory -->
+        <aside class="panel panel-right">
+
+            <div class="right-section">
+                <div class="panel-header">
+                    <h2>Issues Found</h2>
+                    <span id="issue-count" class="badge badge-count">0</span>
+                </div>
+                <div id="issues-live" class="issues-live">
+                    <p class="placeholder-text">Issues appear here as the agent finds them.</p>
+                </div>
+            </div>
+
+            <div class="right-section">
+                <div class="panel-header">
+                    <h3>🧠 Graph Memory</h3>
+                    <button onclick="loadMemoryStats()" class="btn-sm">&#x21BB;</button>
+                </div>
+                <div id="memory-stats" class="memory-stats">
+                    <p class="placeholder-text">Loading...</p>
+                </div>
+            </div>
+
+            <div id="session-summary" class="right-section hidden">
+                <h3>Session Summary</h3>
+                <div id="summary-content"></div>
+            </div>
+
+        </aside>
+    </div>
 </div>
-<script src="/ui/app.js"></script>
+<script src="ui/app.js"></script>
 </body>
 </html>
