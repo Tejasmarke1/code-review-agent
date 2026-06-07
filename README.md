@@ -81,7 +81,7 @@ The loop is implemented from scratch in `src/agent/react_loop.py`. No frameworks
 
 ---
 
-## What's Built (Days 1 - 3)
+## What's Built (Days 1 - 4)
 
 | Component | File | Status |
 |---|---|---|
@@ -92,22 +92,24 @@ The loop is implemented from scratch in `src/agent/react_loop.py`. No frameworks
 | File tools | `src/tools/file_tools.py` | ✅ |
 | Analysis tools | `src/tools/analysis_tools.py` | ✅ |
 | Defect API tool | `src/tools/defect_api_tool.py` | ✅ |
+| GitHub Clone Tools | `src/tools/github_tools.py` | ✅ |
 | Groq LLM client | `src/llm/groq_client.py` | ✅ |
 | Multi-file Orchestrator | `src/agent/orchestrator.py` | ✅ |
 | Neo4j graph memory | `src/memory/` | ✅ |
 | Memory Query Tools | `src/tools/memory_tools.py` | ✅ |
 | Markdown & JSON Reports | `reports/generator.py` | ✅ |
 | FastAPI Server | `src/api/` | ✅ |
+| SSE Streaming Endpoint | `src/api/routers/stream.py` | ✅ |
 | Web Interface (UI) | `ui/` | ✅ |
 | Automated Tests | `tests/` | ✅ |
 
-The system now operates across multiple files within repositories, automatically remembering past issues, tracking reviews across time, detecting systemic patterns via Neo4j Graph Memory, and serving everything via a modern FastAPI layer + Web Interface.
+The system now operates across multiple files within repositories, automatically remembering past issues, tracking reviews across time, detecting systemic patterns via Neo4j Graph Memory, and serving everything via a modern FastAPI layer + Web Interface. Day 4 introduced real GitHub repository cloning and Server-Sent Events (SSE) streaming for live, real-time agent trace output along with resilient bug fixes.
 
-## Day 4 — Planned
+## Day 5 — Planned
 
-- Streaming trace output
-- Defect API live integrations
+- Full Defect API live integrations
 - Pipeline/CI integrations
+- Advanced UI features for stream visualization
 
 ---
 
@@ -155,7 +157,12 @@ Day 3 (FastAPI Server & Web UI Test):
 python scripts/day3_run.py
 ```
 
-*When Day 3 script is running, the server is available at `http://localhost:8000` and the Web UI at `http://localhost:8000/ui/index.html`.*
+Day 4 (GitHub Clone Tools & SSE Streaming Endpoint Test):
+```bash
+python scripts/day4_run.py
+```
+
+*When Day 4 (or Day 3) script is running, the server is available at `http://localhost:8000` and the Web UI at `http://localhost:8000/ui/index.html`.*
 
 ### 6. Run unit tests
 
@@ -178,6 +185,10 @@ pytest tests/ -v
 | `check_imports` | analysis | Dependency and coupling analysis |
 | `get_repo_risk_scores` | defect_api | ML risk scores for all files |
 | `get_file_explanation` | defect_api | SHAP explanation for one file |
+| `clone_github_repo` | github | Clone GitHub remote repo to local folder |
+| `list_github_files` | github | List Python files in a GitHub repo |
+| `get_github_file_path` | github | Resolve absolute local path of cloned file |
+| `cleanup_github_clone` | github | Delete local clone for a repo |
 | `search_past_issues` | memory | Search Neo4j memory for past issues in repo |
 | `get_file_review_history` | memory | Get historical review trends for a file |
 | `get_repo_patterns` | memory | Detect systemic cross-file patterns |

@@ -15,6 +15,8 @@ from src.api.dependencies import AppState, get_app_state
 
 router = APIRouter(prefix="/stream", tags=["Streaming"])
 
+SSE_TIMEOUT_SECONDS = 660  # 11 minutes total
+
 
 def sse(event_type: str, data: dict) -> str:
     return f"event: {event_type}\ndata: {json.dumps(data, default=str)}\n\n"
@@ -84,16 +86,27 @@ class StreamingReviewRunner:
 
         asyncio.create_task(_run_blocking())
 
+        deadline = time.time() + SSE_TIMEOUT_SECONDS
         while True:
+            # Check hard deadline
+            remaining = deadline - time.time()
+            if remaining <= 0:
+                yield sse("error", {"message": f"Review timed out after {SSE_TIMEOUT_SECONDS}s"})
+                yield sse("done",  {"error": "timeout"})
+                break
+
             try:
-                event_type, data = await asyncio.wait_for(queue.get(), timeout=360)
+                # Wait at most 15s — then send keepalive and loop
+                event_type, data = await asyncio.wait_for(
+                    queue.get(), timeout=min(15.0, remaining)
+                )
                 yield sse(event_type, data)
                 if event_type == "done":
                     break
             except asyncio.TimeoutError:
-                yield sse("error", {"message": "Review timed out after 6 minutes"})
-                yield sse("done",  {"error":   "timeout"})
-                break
+                # 15s elapsed with no event — send keepalive to hold the connection
+                yield ": keepalive\n\n"
+                continue
             except Exception as e:
                 yield sse("error", {"message": str(e)})
                 yield sse("done",  {"error":   str(e)})

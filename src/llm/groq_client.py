@@ -23,7 +23,7 @@ class GroqClient:
     rate limiting to handle the free-tier tokens-per-minute constraint.
     """
 
-    TOKEN_LIMIT_PER_MINUTE = 5000
+    TOKEN_LIMIT_PER_MINUTE = 10000
 
     def __init__(self):
         if not LLM["api_key"]:
@@ -39,7 +39,7 @@ class GroqClient:
         self._call_count = 0
         self._total_tokens = 0
         self._last_call_time: float = 0.0
-        self._min_interval: float = 4.0
+        self._min_interval: float = 2.0
         self._token_window: deque = deque()  # (timestamp, tokens) pairs
 
     def _wait_for_token_budget(self, estimated_tokens: int = 500) -> None:

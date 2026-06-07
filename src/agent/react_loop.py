@@ -207,6 +207,8 @@ class ReActLoop:
 
             # Auto-populate state.issues_found from tool output
             issues_before = len(state.issues_found)
+            # Temporary — add before the _extract_issues_from_observation call
+            logger.debug(f"[{state.session_id}] RAW OBSERVATION from {action}:\n{observation}")
             self._extract_issues_from_observation(action, observation, state)
 
             # Record the step and build the continuation prompt

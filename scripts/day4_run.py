@@ -6,6 +6,7 @@ Confirms bug fixes, smoke-tests the SSE endpoint, exercises GitHub tools,
 then keeps the server alive for manual UI exploration.
 """
 
+import json
 import subprocess, sys, time, tempfile, shutil
 from pathlib import Path
 
@@ -128,15 +129,15 @@ TOKEN = "sk-prod-abc"
 ''', encoding="utf-8")
 
 print(f"  Test files created in {tmp_dir}")
-print(f"  Connecting to SSE stream (up to 120s timeout)...")
+print(f"  Connecting to SSE stream (up to 600s timeout)...")
 
 events_received: list[dict] = []
-step_count  = 0
-issue_count = 0
-done_event  = None
+step_count    = 0
+issue_count   = 0
+done_event    = None
 current_event = ""
 
-files_param = f"{file_a},{file_b}"
+files_param = f"{file_a.as_posix()},{file_b.as_posix()}"
 url = (
     f"http://localhost:8000/stream/review"
     f"?repo_url=https://github.com/example/day4-smoke-test"
@@ -146,38 +147,52 @@ url = (
 )
 
 try:
-    with httpx.stream("GET", url, timeout=180) as resp:
-        t_start = time.time()
-        for line in resp.iter_lines():
-            if time.time() - t_start > 170:
-                warn("SSE timeout — stopping collection")
-                break
-            if not line or not line.startswith("data:"):
+    with httpx.Client(timeout=httpx.Timeout(
+        connect=10.0,
+        read=660.0,
+        write=10.0,
+        pool=10.0,
+    )) as client:
+        with client.stream("GET", url) as resp:
+            t_start = time.time()
+            for line in resp.iter_lines():
+                if time.time() - t_start > 600:
+                    warn("SSE timeout — stopping collection after 600s")
+                    break
+                if not line:
+                    continue
+                if line.startswith(":"):
+                    elapsed = f"{time.time()-t_start:.1f}s"
+                    print(f"  [{elapsed}] ... waiting (Groq rate limit)")
+                    continue
                 if line.startswith("event:"):
                     current_event = line.split(":", 1)[1].strip()
-                continue
-            try:
-                import json
-                data = json.loads(line[5:].strip())
-                events_received.append({"type": current_event, "data": data})
-                elapsed = f"{time.time()-t_start:.1f}s"
-                if current_event == "step":
-                    step_count += 1
-                    action = data.get("action", "?")
-                    print(f"  [{elapsed}] step: {action}")
-                elif current_event == "issue":
-                    issue_count += 1
-                    print(f"  [{elapsed}] issue: [{data.get('severity')}] {data.get('title','')[:50]}")
-                elif current_event == "status":
-                    print(f"  [{elapsed}] status: {data.get('type','?')}")
-                elif current_event == "done":
-                    done_event = data
-                    print(f"  [{elapsed}] DONE: {data}")
-                    break
-                elif current_event == "error":
-                    print(f"  [{elapsed}] error: {data.get('message','?')}")
-            except Exception:
-                pass
+                    continue
+                if not line.startswith("data:"):
+                    continue
+                try:
+                    data = json.loads(line[5:].strip())
+                    events_received.append({"type": current_event, "data": data})
+                    elapsed = f"{time.time()-t_start:.1f}s"
+                    if current_event == "step":
+                        step_count += 1
+                        action = data.get("action", "?")
+                        print(f"  [{elapsed}] step: {action}")
+                    elif current_event == "issue":
+                        issue_count += 1
+                        print(f"  [{elapsed}] issue: [{data.get('severity')}] {data.get('title','')[:50]}")
+                    elif current_event == "status":
+                        print(f"  [{elapsed}] status: {data.get('type','?')}")
+                    elif current_event == "keepalive":
+                        print(f"  [{elapsed}] ... waiting (Groq rate limit)")
+                    elif current_event == "done":
+                        done_event = data
+                        print(f"  [{elapsed}] DONE: {data}")
+                        break
+                    elif current_event == "error":
+                        print(f"  [{elapsed}] error: {data.get('message','?')}")
+                except Exception:
+                    pass
 except Exception as e:
     warn(f"SSE stream error: {e}")
 
@@ -194,6 +209,10 @@ chk("Total events received",          len(events_received) >= 2, f"got {len(even
 if done_event:
     chk("Done has files_reviewed", "files_reviewed" in done_event)
 
+# Clean up AFTER checks — wait for server to finish if stream timed out
+if not done_event:
+    warn("Stream timed out before done — waiting 60s for server to finish")
+    time.sleep(60)
 shutil.rmtree(tmp_dir, ignore_errors=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
